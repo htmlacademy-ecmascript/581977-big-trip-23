@@ -1,7 +1,7 @@
 # Проект «Большое путешествие»
 
 * Студент: [Ilia Cheshev](https://up.htmlacademy.ru/ecmascript/23/user/581977).
-* Наставник: `Неизвестно`.
+* Наставник: [Артем Именин](https://htmlacademy.ru/profile/aimenin).
 
 ---
 
