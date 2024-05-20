@@ -1,6 +1,5 @@
 import {TRIP_TYPES, CITY_NAMES, PICTURES_URL, MOCKED_DESCRIPTION} from '../const.js';
 import {getRandomArrayElement, getRandomInteger} from '../utils.js';
-import dayjs from 'dayjs';
 
 const arrayLength = {
   min: 1,
