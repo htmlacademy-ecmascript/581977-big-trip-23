@@ -13,4 +13,22 @@ const getRandomInteger = (min, max)=> {
 
 const getFormattedDate = (date) => date ? dayjs(date).format(DATE_FORMAT) : '';
 
-export {getRandomArrayElement, getRandomInteger, getFormattedDate};
+const snakeToCamel = (str) =>
+  str.toLowerCase().replace(/([-_][a-z])/g, (group) =>
+    group
+      .toUpperCase()
+      .replace('-', '')
+      .replace('_', '')
+  );
+
+const camelize = (item) => {
+  for (const key of Object.keys(item)) {
+    if(key.includes('_')) {
+      item[snakeToCamel(key)] = item[key];
+      delete item[key];
+    }
+  }
+  return item;
+};
+
+export {getRandomArrayElement, getRandomInteger, getFormattedDate, camelize};

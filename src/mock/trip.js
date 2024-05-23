@@ -1,96 +1,50 @@
-import {TRIP_TYPES, CITY_NAMES, PICTURES_URL, MOCKED_DESCRIPTION} from '../const.js';
-import {getRandomArrayElement, getRandomInteger} from '../utils.js';
+import {PICTURES_URL} from '../const.js';
+import {getRandomArrayElement, getRandomInteger, camelize} from '../utils.js';
 
-const arrayLength = {
-  min: 1,
-  max: 5
-};
-
-const pictureNumberRange = {
-  min: 1,
-  max: 15
-};
-
-const prices = [1000, 1500, 2000, 3000, 3500];
-
-const mockWaypoints = [
+const mockedDestinations = [
   {
-    type: getRandomArrayElement(TRIP_TYPES),
-    destination: {
-      description: Array.from({length: getRandomInteger(arrayLength.min, arrayLength.max)}, () => getRandomArrayElement(MOCKED_DESCRIPTION.split('. '))),
-      name: getRandomArrayElement(CITY_NAMES),
-      pictures: Array.from({length: getRandomInteger(arrayLength.min, arrayLength.max)}, () => PICTURES_URL + getRandomInteger(pictureNumberRange.min, pictureNumberRange.max))
-    },
-    startDate: new Date('2024-05-20'),
-    endDate: new Date('2024-05-21'),
-    price: getRandomArrayElement(prices),
-    offers: [{
-      type: 'luggage',
-      name: 'Add luggage',
-      price: '50'
-    },
-    {
-      type: 'comfort',
-      name: 'Switch to comfort',
-      price: '80'
-    }]
-  },
-  {
-    type: getRandomArrayElement(TRIP_TYPES),
-    destination: {
-      description: Array.from({length: getRandomInteger(arrayLength.min, arrayLength.max)}, () => getRandomArrayElement(MOCKED_DESCRIPTION.split('. '))),
-      name: getRandomArrayElement(CITY_NAMES),
-      pictures: Array.from({length: getRandomInteger(arrayLength.min, arrayLength.max)}, () => PICTURES_URL + getRandomInteger(pictureNumberRange.min, pictureNumberRange.max))
-    },
-    startDate: new Date('2024-06-01'),
-    endDate: new Date('2024-07-01'),
-    price: getRandomArrayElement(prices),
-    offers: null
-  },
-  {
-    type: getRandomArrayElement(TRIP_TYPES),
-    destination: {
-      description: Array.from({length: getRandomInteger(arrayLength.min, arrayLength.max)}, () => getRandomArrayElement(MOCKED_DESCRIPTION.split('. '))),
-      name: getRandomArrayElement(CITY_NAMES),
-      pictures: Array.from({length: getRandomInteger(arrayLength.min, arrayLength.max)}, () => PICTURES_URL + getRandomInteger(pictureNumberRange.min, pictureNumberRange.max))
-    },
-    startDate: null,
-    endDate: null,
-    price: getRandomArrayElement(prices),
-    offers: [{
-      type: 'meal',
-      name: 'Add meal',
-      price: '15'
-    }]
-  },
-  {
-    type: getRandomArrayElement(TRIP_TYPES),
-    destination: {
-      description: Array.from({length: getRandomInteger(arrayLength.min, arrayLength.max)}, () => getRandomArrayElement(MOCKED_DESCRIPTION.split('. '))),
-      name: getRandomArrayElement(CITY_NAMES),
-      pictures: Array.from({length: getRandomInteger(arrayLength.min, arrayLength.max)}, () => PICTURES_URL + getRandomInteger(pictureNumberRange.min, pictureNumberRange.max))
-    },
-    startDate: null,
-    endDate: null,
-    price: getRandomArrayElement(prices),
-    offers: [{
-      type: 'luggage',
-      name: 'Add luggage',
-      price: '50'
-    },
-    {
-      type: 'comfort',
-      name: 'Switch to comfort',
-      price: '80'
-    },
-    {
-      type: 'seats',
-      name: 'Choose seats',
-      price: '5'
-    }]
+    'id': 'cfe416cq-10xa-ye10-8077-2fs9a01edcab',
+    'description': 'Chamonix, is a beautiful city, a true asian pearl, with crowded streets.',
+    'name': 'Chamonix',
+    'pictures': [
+      {
+        'src': PICTURES_URL + getRandomInteger(1, 15),
+        'description': 'Chamonix parliament building'
+      }
+    ]
   }
 ];
 
-const getRandomWaypoint = () => getRandomArrayElement(mockWaypoints);
+const mockedOffers = [
+  {
+    'type': 'taxi',
+    'offers': [
+      {
+        'id': 'b4c3e4e6-9053-42ce-b747-e281314baa31',
+        'title': 'Upgrade to a business class',
+        'price': 120
+      }
+    ]
+  }
+];
+
+const mockedWaypoints = [
+  {
+    'id': 'f4b62099-293f-4c3d-a702-94eec4a2808c',
+    'base_price': 1100,
+    'date_from': '2019-07-10T22:55:56.845Z',
+    'date_to': '2019-07-11T11:22:13.375Z',
+    'destination': mockedDestinations[0],
+    'is_favorite': false,
+    'offers': [
+      mockedOffers[0]
+    ],
+    'type': 'taxi'
+  }
+];
+
+const waypoints = mockedWaypoints.map((item) => camelize(item));
+
+const getRandomWaypoint = () => getRandomArrayElement(waypoints);
 
 export {getRandomWaypoint};

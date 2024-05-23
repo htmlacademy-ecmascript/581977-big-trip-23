@@ -1,20 +1,19 @@
 import {TRIP_TYPES, CITY_NAMES} from '../const.js';
 import {createElement} from '../render.js';
-import {getFormattedDate} from '../utils';
+import {getFormattedDate} from '../utils.js';
 
 function createCreationFormTemplate(trip) {
-  const {destination: {description, name, pictures}, price, offers, startDate, endDate} = trip;
-
+  const {destination: {description, name, pictures}, basePrice, offers: [{offers}], dateFrom, dateTo} = trip;
   const createTripTypesTemplate = () => TRIP_TYPES.map((tripType) => `<div class="event__type-item">
                           <input id="event-type-${tripType.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${tripType.toLowerCase()}">
                           <label class="event__type-label  event__type-label--${tripType.toLowerCase()}" for="event-type-${tripType.toLowerCase()}-1">${tripType}</label>
                         </div>`).join('');
   const createCityNamesTemplate = () => CITY_NAMES.map((cityName) => `<option value="${cityName}"></option>`).join('');
-  const createPicturesTemplate = () => pictures.map((picture) => `<img class="event__photo" src="${picture}" alt="Event photo">`).join('');
+  const createPicturesTemplate = () => pictures.map((picture) => `<img class="event__photo" src="${picture.src}" alt="Event photo">`).join('');
   const createOffersTemplate = () => offers !== null ? offers.map((offer) => `<div class="event__offer-selector">
                         <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.type}-1" type="checkbox" name="event-offer-${offer.type}" checked>
                         <label class="event__offer-label" for="event-offer-${offer.type}-1">
-                          <span class="event__offer-title">${offer.name}</span>
+                          <span class="event__offer-title">${offer.title}</span>
                           &plus;&euro;&nbsp;
                           <span class="event__offer-price">${offer.price}</span>
                         </label>
@@ -24,8 +23,8 @@ function createCreationFormTemplate(trip) {
   const picturesTemplate = createPicturesTemplate();
   const offersTemplate = createOffersTemplate();
   const formattedDates = {
-    start: getFormattedDate(startDate),
-    end: getFormattedDate(endDate)
+    start: getFormattedDate(dateFrom),
+    end: getFormattedDate(dateTo)
   };
 
   return (`<li class="trip-events__item">
@@ -69,7 +68,7 @@ function createCreationFormTemplate(trip) {
                       <span class="visually-hidden">Price</span>
                       &euro;
                     </label>
-                    <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}">
+                    <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${basePrice}">
                   </div>
 
                   <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>

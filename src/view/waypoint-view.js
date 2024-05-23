@@ -1,7 +1,7 @@
 import {createElement} from '../render.js';
 
 function createWaypointTemplate(trip) {
-  const {type, destination: {name}, price} = trip;
+  const {type, destination: {name}, basePrice} = trip;
 
   return (`<li class="trip-events__item">
               <div class="event">
@@ -19,7 +19,7 @@ function createWaypointTemplate(trip) {
                   <p class="event__duration">30M</p>
                 </div>
                 <p class="event__price">
-                  &euro;&nbsp;<span class="event__price-value">${price}</span>
+                  &euro;&nbsp;<span class="event__price-value">${basePrice}</span>
                 </p>
                 <h4 class="visually-hidden">Offers:</h4>
                 <ul class="event__selected-offers">
