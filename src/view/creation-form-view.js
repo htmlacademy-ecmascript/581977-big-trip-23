@@ -2,15 +2,19 @@ import {TRIP_TYPES, CITY_NAMES} from '../const.js';
 import {createElement} from '../render.js';
 import {getFormattedDate} from '../utils.js';
 
-function createCreationFormTemplate(trip) {
-  const {destination: {description, name, pictures}, basePrice, offers: [{offers}], dateFrom, dateTo} = trip;
+function createCreationFormTemplate(trip, destinations, offers) {
+  const {basePrice, dateFrom, dateTo, destination, type} = trip;
+  const currentDestination = destinations.find((item) => item.id === destination);
+  const {description, name, pictures} = currentDestination;
+  const typeOffers = offers.find((offer) => offer.type === type).offers;
+  const pointOffers = typeOffers.filter((typeOffer) => trip.offers.includes(typeOffer.id));
   const createTripTypesTemplate = () => TRIP_TYPES.map((tripType) => `<div class="event__type-item">
                           <input id="event-type-${tripType.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${tripType.toLowerCase()}">
                           <label class="event__type-label  event__type-label--${tripType.toLowerCase()}" for="event-type-${tripType.toLowerCase()}-1">${tripType}</label>
                         </div>`).join('');
   const createCityNamesTemplate = () => CITY_NAMES.map((cityName) => `<option value="${cityName}"></option>`).join('');
   const createPicturesTemplate = () => pictures.map((picture) => `<img class="event__photo" src="${picture.src}" alt="Event photo">`).join('');
-  const createOffersTemplate = () => offers !== null ? offers.map((offer) => `<div class="event__offer-selector">
+  const createOffersTemplate = () => pointOffers !== null ? pointOffers.map((offer) => `<div class="event__offer-selector">
                         <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.type}-1" type="checkbox" name="event-offer-${offer.type}" checked>
                         <label class="event__offer-label" for="event-offer-${offer.type}-1">
                           <span class="event__offer-title">${offer.title}</span>
@@ -99,12 +103,14 @@ function createCreationFormTemplate(trip) {
 }
 
 export default class CreationFormView {
-  constructor({trip}) {
+  constructor({trip, destinations, offers}) {
     this.trip = trip;
+    this.destinations = destinations;
+    this.offers = offers;
   }
 
   getTemplate() {
-    return createCreationFormTemplate(this.trip);
+    return createCreationFormTemplate(this.trip, this.destinations, this.offers);
   }
 
   getElement() {
