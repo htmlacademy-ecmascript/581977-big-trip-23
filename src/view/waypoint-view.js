@@ -1,35 +1,48 @@
-import {createElement} from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
+import {DateTimeFormats, getDatesDiff, getFormattedDate} from '../utils';
 
-function createWaypointTemplate(trip, destinations) {
-  const {type, basePrice, isFavorite, destination} = trip;
+function createWaypointTemplate(waypoint, destinations, offers) {
+  const {basePrice, dateFrom, dateTo, destination, type, isFavorite} = waypoint;
   const currentDestination = destinations.find((item) => item.id === destination);
   const {name} = currentDestination;
+  const typeOffers = offers.find((offer) => offer.type === type).offers;
+  const pointOffers = typeOffers.filter((typeOffer) => waypoint.offers.includes(typeOffer.id));
+  const createOffersTemplate = () => pointOffers.length === 0 ? '' : pointOffers.map((offer) => `<li class="event__offer">
+                    <span class="event__offer-title">${offer.title}</span>
+                    &plus;&euro;&nbsp;
+                    <span class="event__offer-price">${offer.price}</span>
+                  </li>`).join('');
+  const offersTemplate = createOffersTemplate();
+  const formattedDates = {
+    startDate: getFormattedDate(dateFrom, DateTimeFormats.DATE),
+    endDate: getFormattedDate(dateTo, DateTimeFormats.DATE),
+    startMonthDay: getFormattedDate(dateFrom, DateTimeFormats.MONTHDAY).toUpperCase(),
+    startTime: getFormattedDate(dateFrom, DateTimeFormats.TIME),
+    endTime: getFormattedDate(dateTo, DateTimeFormats.TIME),
+    daysDiff: getDatesDiff(dateFrom, dateTo)
+  };
 
   return (`<li class="trip-events__item">
               <div class="event">
-                <time class="event__date" datetime="2019-03-18">MAR 18</time>
+                <time class="event__date" datetime="${formattedDates.startDate}">${formattedDates.startMonthDay}</time>
                 <div class="event__type">
                   <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
                 </div>
                 <h3 class="event__title">${type} ${name}</h3>
                 <div class="event__schedule">
                   <p class="event__time">
-                    <time class="event__start-time" datetime="2019-03-18T10:30">10:30</time>
+                    <time class="event__start-time" datetime="${formattedDates.startDate}T${formattedDates.startTime}">${formattedDates.startTime}</time>
                     &mdash;
-                    <time class="event__end-time" datetime="2019-03-18T11:00">11:00</time>
+                    <time class="event__end-time" datetime="${formattedDates.endDate}T${formattedDates.endTime}">${formattedDates.endTime}</time>
                   </p>
-                  <p class="event__duration">30M</p>
+                  <p class="event__duration">${formattedDates.daysDiff}D</p>
                 </div>
                 <p class="event__price">
                   &euro;&nbsp;<span class="event__price-value">${basePrice}</span>
                 </p>
                 <h4 class="visually-hidden">Offers:</h4>
                 <ul class="event__selected-offers">
-                  <li class="event__offer">
-                    <span class="event__offer-title">Order Uber</span>
-                    &plus;&euro;&nbsp;
-                    <span class="event__offer-price">20</span>
-                  </li>
+                  ${offersTemplate}
                 </ul>
                 <button class="event__favorite-btn ${isFavorite ? 'event__favorite-btn--active' : ''}" type="button">
                   <span class="visually-hidden">Add to favorite</span>
@@ -44,21 +57,29 @@ function createWaypointTemplate(trip, destinations) {
             </li>`);
 }
 
-export default class WaypointView {
-  constructor({trip, destinations}) {
-    this.trip = trip;
-    this.destinations = destinations;
+export default class WaypointView extends AbstractView{
+  #waypoint = null;
+  #destinations = null;
+  #offers = null;
+  #handleEditClick = null;
+
+  constructor({waypoint, destinations, offers, onEditClick}) {
+    super();
+    this.#waypoint = waypoint;
+    this.#destinations = destinations;
+    this.#offers = offers;
+    this.#handleEditClick = onEditClick;
+
+    this.element.querySelector('.event__rollup-btn')
+      .addEventListener('click', this.#editClickHandler);
   }
 
-  getTemplate() {
-    return createWaypointTemplate(this.trip, this.destinations);
+  get template() {
+    return createWaypointTemplate(this.#waypoint, this.#destinations, this.#offers);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-
-    return this.element;
-  }
+  #editClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleEditClick();
+  };
 }

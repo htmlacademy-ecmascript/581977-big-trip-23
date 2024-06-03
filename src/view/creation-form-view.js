@@ -1,13 +1,13 @@
 import {TRIP_TYPES, CITY_NAMES} from '../const.js';
-import {createElement} from '../render.js';
-import {getFormattedDate} from '../utils.js';
+import {DateTimeFormats, getFormattedDate} from '../utils.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
-function createCreationFormTemplate(trip, destinations, offers) {
-  const {basePrice, dateFrom, dateTo, destination, type} = trip;
+function createCreationFormTemplate(waypoint, destinations, offers) {
+  const {basePrice, dateFrom, dateTo, destination, type} = waypoint;
   const currentDestination = destinations.find((item) => item.id === destination);
   const {description, name, pictures} = currentDestination;
   const typeOffers = offers.find((offer) => offer.type === type).offers;
-  const pointOffers = typeOffers.filter((typeOffer) => trip.offers.includes(typeOffer.id));
+  const pointOffers = typeOffers.filter((typeOffer) => waypoint.offers.includes(typeOffer.id));
   const createTripTypesTemplate = () => TRIP_TYPES.map((tripType) => `<div class="event__type-item">
                           <input id="event-type-${tripType.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${tripType.toLowerCase()}">
                           <label class="event__type-label  event__type-label--${tripType.toLowerCase()}" for="event-type-${tripType.toLowerCase()}-1">${tripType}</label>
@@ -27,8 +27,8 @@ function createCreationFormTemplate(trip, destinations, offers) {
   const picturesTemplate = createPicturesTemplate();
   const offersTemplate = createOffersTemplate();
   const formattedDates = {
-    start: getFormattedDate(dateFrom),
-    end: getFormattedDate(dateTo)
+    start: getFormattedDate(dateFrom, DateTimeFormats.DATETIME),
+    end: getFormattedDate(dateTo, DateTimeFormats.DATETIME)
   };
 
   return (`<li class="trip-events__item">
@@ -102,22 +102,19 @@ function createCreationFormTemplate(trip, destinations, offers) {
             </li>`);
 }
 
-export default class CreationFormView {
-  constructor({trip, destinations, offers}) {
-    this.trip = trip;
-    this.destinations = destinations;
-    this.offers = offers;
+export default class CreationFormView extends AbstractView{
+  #waypoint = null;
+  #destinations = null;
+  #offers = null;
+
+  constructor({waypoint, destinations, offers}) {
+    super();
+    this.#waypoint = waypoint;
+    this.#destinations = destinations;
+    this.#offers = offers;
   }
 
-  getTemplate() {
-    return createCreationFormTemplate(this.trip, this.destinations, this.offers);
-  }
-
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-
-    return this.element;
+  get template() {
+    return createCreationFormTemplate(this.#waypoint, this.#destinations, this.#offers);
   }
 }
