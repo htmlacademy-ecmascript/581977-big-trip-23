@@ -4,6 +4,8 @@ import FiltersView from '../view/filters-view.js';
 import WaypointView from '../view/waypoint-view.js';
 import EditingFormView from '../view/editing-form-view.js';
 import WaypointListView from '../view/waypoint-list-view.js';
+import ListEmptyView from '../view/list-empty-view';
+import {generateFilter} from '../mock/filters';
 
 export default class RenderComponentsPresenter {
   #waypointsModel = null;
@@ -15,6 +17,7 @@ export default class RenderComponentsPresenter {
   #waypointListView = new WaypointListView();
   tripEventsElement = document.querySelector('.trip-events');
   tripControlsFiltersElement = document.querySelector('.trip-controls__filters');
+  pageBodyContainer = document.querySelector('.page-main > .page-body__container');
 
   #waypoints = [];
   #destinations = [];
@@ -63,12 +66,18 @@ export default class RenderComponentsPresenter {
     this.#destinations = [...this.#waypointsModel.destinations];
     this.#offers = [...this.#waypointsModel.offers];
 
+    const filteredTrips = generateFilter(this.#waypoints);
+
     render(new SortView, this.tripEventsElement);
-    render(new FiltersView(), this.tripControlsFiltersElement);
+    render(new FiltersView(filteredTrips), this.tripControlsFiltersElement);
     render(this.#waypointListView, this.tripEventsElement);
 
-    for (let i = 0; i < this.#waypoints.length; i++) {
-      this.#renderWaypoint(this.#waypoints[i], this.#destinations, this.#offers);
+    if (this.#waypoints.length === 0) {
+      render(new ListEmptyView(), this.pageBodyContainer);
+    } else {
+      for (let i = 0; i < this.#waypoints.length; i++) {
+        this.#renderWaypoint(this.#waypoints[i], this.#destinations, this.#offers);
+      }
     }
   }
 }
