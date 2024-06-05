@@ -4,13 +4,13 @@ const createListEmptyTemplate = (filter) => {
   const getCurrentFilter = () => {
     switch (filter) {
       case 'Past':
-        return 'There are no past events now'
+        return 'There are no past events now';
       case 'Present':
-        return 'There are no present events now'
+        return 'There are no present events now';
       case 'Future':
-        return 'There are no future events now'
+        return 'There are no future events now';
       default:
-        return 'Click New Event to create your first point'
+        return 'Click New Event to create your first point';
     }
   };
 
@@ -28,11 +28,11 @@ const createListEmptyTemplate = (filter) => {
               * Present — 'There are no present events now';
               * Future — 'There are no future events now'.
           -->
-        </section>`
-}
+        </section>`;
+};
 
 export default class ListEmptyView extends AbstractView{
-  #filter = ''
+  #filter = '';
 
   constructor(filter) {
     super();
