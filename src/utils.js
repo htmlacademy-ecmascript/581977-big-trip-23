@@ -1,6 +1,11 @@
 import dayjs from 'dayjs';
 
-const DATE_FORMAT = 'DD/MM/YY HH:mm';
+const DateTimeFormats = {
+  DATETIME: 'DD/MM/YY HH:mm',
+  DATE: 'YYYY-MM-DD',
+  MONTHDAY: 'MMM DD',
+  TIME: 'HH:mm',
+};
 
 const getRandomArrayElement = (items) => items[Math.floor(Math.random() * items.length)];
 
@@ -11,7 +16,9 @@ const getRandomInteger = (min, max)=> {
   return Math.floor(result);
 };
 
-const getFormattedDate = (date) => date ? dayjs(date).format(DATE_FORMAT) : '';
+const getFormattedDate = (date, format) => date ? dayjs(date).format(format) : '';
+
+const getDatesDiff = (start, end) => start && end ? dayjs(end).diff(dayjs(start), 'd') : '';
 
 const snakeToCamel = (str) =>
   str.toLowerCase().replace(/([-_][a-z])/g, (group) =>
@@ -31,4 +38,6 @@ const camelize = (item) => {
   return item;
 };
 
-export {getRandomArrayElement, getRandomInteger, getFormattedDate, camelize};
+const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1);
+
+export {DateTimeFormats, getRandomArrayElement, getRandomInteger, getFormattedDate, getDatesDiff, camelize, capitalizeFirstLetter};
