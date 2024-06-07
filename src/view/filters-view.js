@@ -1,5 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import {capitalizeFirstLetter} from '../utils';
+import {capitalizeFirstLetter} from '../utils.js';
 
 function createFiltersItemTemplate(filter) {
   const {type} = filter;
@@ -24,7 +24,7 @@ function createFiltersTemplate(filteredTrips) {
 export default class FiltersView extends AbstractView{
   #filteredTrips = null;
 
-  constructor(filteredTrips) {
+  constructor({filteredTrips}) {
     super();
     this.#filteredTrips = filteredTrips;
   }

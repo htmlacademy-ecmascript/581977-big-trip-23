@@ -1,6 +1,6 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import {CITY_NAMES, TRIP_TYPES} from '../const';
-import {capitalizeFirstLetter, DateTimeFormats, getFormattedDate} from '../utils';
+import {CITY_NAMES, TRIP_TYPES} from '../const.js';
+import {capitalizeFirstLetter, DateTimeFormats, getFormattedDate} from '../utils.js';
 
 function createEditingFormTemplate(waypoint, destinations, offers) {
   const {basePrice, dateFrom, dateTo, destination, type} = waypoint;
@@ -118,6 +118,6 @@ export default class EditingFormView extends AbstractView{
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#handleFormSubmit();
+    this.#handleFormSubmit(this.#waypoint);
   };
 }
