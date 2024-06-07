@@ -6,6 +6,8 @@ import ListEmptyView from '../view/list-empty-view.js';
 import {generateFilter} from '../mock/filters.js';
 import WaypointPresenter from './waypoint-presenter.js';
 import {updateItem} from '../utils.js';
+import {SortTypes} from '../const.js';
+import {sortByPrice, sortByTime} from '../sort.js';
 
 export default class RenderComponentsPresenter {
   #waypointsModel = null;
@@ -15,7 +17,7 @@ export default class RenderComponentsPresenter {
   }
 
   #waypointListComponent = new WaypointListView();
-  #sortComponent = new SortView();
+  #sortComponent = null;
 
   tripEventsElement = document.querySelector('.trip-events');
   tripControlsFiltersElement = document.querySelector('.trip-controls__filters');
@@ -26,6 +28,8 @@ export default class RenderComponentsPresenter {
   #offers = [];
   #filteredTrips = null;
   #waypointPresenters = new Map();
+  #currentSortType = SortTypes.DAY;
+  #initialWaypoints = [];
 
   init() {
     this.#waypoints = [...this.#waypointsModel.waypoints];
@@ -33,10 +37,44 @@ export default class RenderComponentsPresenter {
     this.#offers = [...this.#waypointsModel.offers];
     this.#filteredTrips = generateFilter(this.#waypoints);
 
+    this.#initialWaypoints = [...this.#waypointsModel.waypoints];
+
     this.#renderBoard();
   }
 
+  #sortWaypoints(sortType) {
+    switch (sortType) {
+      case SortTypes.PRICE:
+        this.#waypoints.sort(sortByPrice);
+        break;
+      case SortTypes.TIME:
+        this.#waypoints.sort(sortByTime);
+        break;
+      case SortTypes.EVENT:
+      case SortTypes.OFFER:
+        break;
+      case SortTypes.DAY:
+        this.#waypoints = [...this.#initialWaypoints];
+    }
+
+    this.#currentSortType = sortType;
+  }
+
+  #handleSortTypeChange = (sortType) => {
+    if (this.#currentSortType === sortType) {
+      return;
+    }
+
+    this.#sortWaypoints(sortType);
+    this.#clearWaypointList();
+    this.#renderWaypoints();
+  };
+
   #renderSort() {
+    this.#sortComponent = new SortView({
+      onSortTypeChange: this.#handleSortTypeChange
+    });
+
     render(this.#sortComponent, this.tripEventsElement);
   }
 
@@ -46,6 +84,7 @@ export default class RenderComponentsPresenter {
 
   #handleWaypointChange(updatedWaypoint) {
     this.#waypoints = updateItem(this.#waypoints, updatedWaypoint);
+    this.#initialWaypoints = updateItem(this.#initialWaypoints, updatedWaypoint);
     this.#waypointPresenters.get(updatedWaypoint.id).init(updatedWaypoint, this.#destinations, this.#offers);
   }
 

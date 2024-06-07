@@ -10,4 +10,12 @@ const FilterTypes = {
   PAST: 'past'
 };
 
-export {TRIP_TYPES, CITY_NAMES, PICTURES_URL, MOCKED_DESCRIPTION, FilterTypes};
+const SortTypes = {
+  DAY: 'sort-day',
+  EVENT: 'sort-event',
+  TIME: 'sort-time',
+  PRICE: 'sort-price',
+  OFFER: 'sort-offer'
+};
+
+export {TRIP_TYPES, CITY_NAMES, PICTURES_URL, MOCKED_DESCRIPTION, FilterTypes, SortTypes};
