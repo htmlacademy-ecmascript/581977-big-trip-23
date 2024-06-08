@@ -1,24 +1,26 @@
-import AbstractView from '../framework/view/abstract-view.js';
 import {CITY_NAMES, TRIP_TYPES} from '../const.js';
 import {capitalizeFirstLetter, DateTimeFormats, getFormattedDate} from '../utils.js';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 
 function createEditingFormTemplate(waypoint, destinations, offers) {
   const {basePrice, dateFrom, dateTo, destination, type} = waypoint;
   const currentDestination = destinations.find((item) => item.id === destination);
   const {description} = currentDestination;
-  const typeOffers = offers.find((offer) => offer.type === type).offers;
-  const pointOffers = typeOffers.filter((typeOffer) => waypoint.offers.includes(typeOffer.id));
+  const typeOffers = offers.find((offer) => offer.type === type);
+  const pointOffers = typeOffers ? typeOffers.offers.filter((typeOffer) => waypoint.offers.includes(typeOffer.id)) : [];
   const createTripTypesTemplate = () => TRIP_TYPES.map((tripType) => `<div class="event__type-item">
                           <input id="event-type-${tripType.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${tripType.toLowerCase()}">
                           <label class="event__type-label  event__type-label--${tripType.toLowerCase()}" for="event-type-${tripType.toLowerCase()}-1">${tripType}</label>
                         </div>`).join('');
   const createCityNamesTemplate = () => CITY_NAMES.map((cityName) => `<option value="${cityName}"></option>`).join('');
-  const createOffersTemplate = () => pointOffers.length === 0 ? '' : `<section class="event__section  event__section--offers">
+  const createOffersTemplate = () => typeOffers.offers.length === 0 ? '' : `<section class="event__section  event__section--offers">
                     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
                     <div class="event__available-offers">
-                      ${pointOffers.map((offer) => `<div class="event__offer-selector">
-                        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.type}-1" type="checkbox" name="event-offer-${offer.type}" checked>
-                        <label class="event__offer-label" for="event-offer-${offer.type}-1">
+                      ${typeOffers.offers.map((offer) => `<div class="event__offer-selector">
+                        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.id}-1" data-id="${offer.id}" type="checkbox" name="event-offer-${offer.id}" ${(pointOffers.some((item)=> item.id === offer.id) ? 'checked' : '')}>
+                        <label class="event__offer-label" for="event-offer-${offer.id}-1">
                           <span class="event__offer-title">${offer.title}</span>
                           &plus;&euro;&nbsp;
                           <span class="event__offer-price">${offer.price}</span>
@@ -26,6 +28,10 @@ function createEditingFormTemplate(waypoint, destinations, offers) {
                       </div>`).join('')}
                     </div>
                   </section>`;
+  const createDescriptionTemplate = () => description ? `<section class="event__section  event__section--destination">
+                    <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+                    <p class="event__destination-description">${description}</p>
+                  </section>` : '';
   const typesTemplate = createTripTypesTemplate();
   const cityNamesTemplate = createCityNamesTemplate();
   const offersTemplate = createOffersTemplate();
@@ -33,6 +39,7 @@ function createEditingFormTemplate(waypoint, destinations, offers) {
     start: getFormattedDate(dateFrom, DateTimeFormats.DATETIME),
     end: getFormattedDate(dateTo, DateTimeFormats.DATETIME)
   };
+  const descriptionTemplate = createDescriptionTemplate();
 
   return (`            <li class="trip-events__item">
               <form class="event event--edit" action="#" method="post">
@@ -86,38 +93,145 @@ function createEditingFormTemplate(waypoint, destinations, offers) {
                 </header>
                 <section class="event__details">
                   ${offersTemplate}
-                  <section class="event__section  event__section--destination">
-                    <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-                    <p class="event__destination-description">${description}</p>
-                  </section>
+                  ${descriptionTemplate}
                 </section>
               </form>
             </li>`);
 }
 
-export default class EditingFormView extends AbstractView{
-  #waypoint = null;
+export default class EditingFormView extends AbstractStatefulView{
   #destinations = null;
   #offers = null;
   #handleFormSubmit = null;
+  #datepicker = null;
 
   constructor({waypoint, destinations, offers, onFormSubmit}) {
     super();
-    this.#waypoint = waypoint;
+    this._setState(EditingFormView.parseWaypointToState(waypoint));
     this.#destinations = destinations;
     this.#offers = offers;
     this.#handleFormSubmit = onFormSubmit;
 
+    this._restoreHandlers();
+  }
+
+  reset(waypoint) {
+    this.updateElement(
+      EditingFormView.parseWaypointToState(waypoint),
+    );
+  }
+
+  removeElement() {
+    super.removeElement();
+
+    if (this.#datepicker) {
+      this.#datepicker.destroy();
+      this.#datepicker = null;
+    }
+  }
+
+  _restoreHandlers() {
     this.element.querySelector('form')
       .addEventListener('submit', this.#formSubmitHandler);
+    this.element.querySelector('.event__type-list').addEventListener('change', this.#typeClickHandler);
+    this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationInputHandler);
+
+    this.element.querySelector('.event__input--price').addEventListener('input', this.#priceInputHandler);
+
+    this.element.querySelector('.event__details').addEventListener('change', this.#offerInputHandler);
+
+    this.#setDatepickerFrom();
+    this.#setDatepickerTo();
   }
 
   get template() {
-    return createEditingFormTemplate(this.#waypoint, this.#destinations, this.#offers);
+    return createEditingFormTemplate(this._state, this.#destinations, this.#offers);
+  }
+
+  static parseWaypointToState(waypoint) {
+    return {...waypoint};
+  }
+
+  static parseStateToWaypoint(state) {
+    return {...state};
+  }
+
+  #dateFromChangeHandler = ([userDate]) => {
+    this.updateElement({
+      dateFrom: userDate,
+    });
+  };
+
+  #dateToChangeHandler = ([userDate]) => {
+    this.updateElement({
+      dateTo: userDate,
+    });
+  };
+
+  #setDatepickerFrom() {
+    this.#datepicker = flatpickr(
+      this.element.querySelector('input[name="event-start-time"]'),
+      {
+        enableTime: true,
+        dateFormat: 'Y/m/d H:i',
+        defaultDate: this._state.dateFrom,
+        onChange: this.#dateFromChangeHandler,
+      }
+    );
+  }
+
+  #setDatepickerTo() {
+    this.#datepicker = flatpickr(
+      this.element.querySelector('input[name="event-end-time"]'),
+      {
+        enableTime: true,
+        dateFormat: 'Y/m/d H:i',
+        defaultDate: this._state.dateTo,
+        onChange: this.#dateToChangeHandler,
+      }
+    );
   }
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#handleFormSubmit(this.#waypoint);
+    this.#handleFormSubmit(EditingFormView.parseStateToWaypoint(this._state));
+  };
+
+  #typeClickHandler = (evt) => {
+    evt.preventDefault();
+    this.updateElement({
+      type: evt.target.value
+    });
+  };
+
+  #destinationInputHandler = (evt) => {
+    evt.preventDefault();
+    const selectedDestination = this.#destinations.find((item) => item.name === evt.target.value);
+
+    if (selectedDestination) {
+      this.updateElement({
+        destination: selectedDestination.id
+      });
+    }
+  };
+
+  #priceInputHandler = (evt) => {
+    evt.preventDefault();
+    this._setState({
+      basePrice: evt.target.value
+    });
+  };
+
+  #offerInputHandler = (evt) => {
+    evt.preventDefault();
+    if (this._state.offers.some((item) => item === evt.target.dataset.id)) {
+      this.updateElement({
+        offers: this._state.offers.filter((item) => item !== evt.target.dataset.id)
+      });
+    } else {
+      this.updateElement({
+        offers: this._state.offers.concat([evt.target.dataset.id])
+      });
+    }
   };
 }

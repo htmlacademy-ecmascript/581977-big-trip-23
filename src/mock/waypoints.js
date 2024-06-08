@@ -9,7 +9,8 @@ const mockedWaypoints = [
     'destination': 'bfa5cb75-a1fe-4b77-a83c-0e528e910e04',
     'is_favorite': false,
     'offers': [
-      'b4c3e4e6-9053-42ce-b747-e281314baa31'
+      'b4c3e4e6-9053-42ce-b747-e281314baa31',
+      '9f113f0a-b373-4961-b8f3-c4328fb574c3'
     ],
     'type': 'taxi'
   },
@@ -33,7 +34,7 @@ const mockedWaypoints = [
     'destination': 'bfa5cb22-a1fe-4b77-a83c-0e528e910e04',
     'is_favorite': false,
     'offers': [
-      'b4c3e4e6-9053-42ce-b747-e281314baa31'
+      '6930f5f3-bba3-4c4e-bda0-e6818e4707f2'
     ],
     'type': 'bus'
   }

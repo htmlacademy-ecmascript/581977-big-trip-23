@@ -68,6 +68,7 @@ export default class WaypointPresenter {
 
   resetView() {
     if (this.#mode !== Mode.DEFAULT) {
+      this.#waypointEditComponent.reset(this.#waypoint);
       this.#replaceFormToCard();
     }
   }
@@ -93,6 +94,7 @@ export default class WaypointPresenter {
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape') {
       evt.preventDefault();
+      this.#waypointEditComponent.reset(this.#waypoint);
       this.#replaceFormToCard();
     }
   };
