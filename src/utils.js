@@ -7,15 +7,6 @@ const DateTimeFormats = {
   TIME: 'HH:mm',
 };
 
-const getRandomArrayElement = (items) => items[Math.floor(Math.random() * items.length)];
-
-const getRandomInteger = (min, max)=> {
-  const lower = Math.ceil(Math.min(Math.abs(min), Math.abs(max)));
-  const upper = Math.floor(Math.max(Math.abs(min), Math.abs(max)));
-  const result = Math.random() * (upper - lower + 1) + lower;
-  return Math.floor(result);
-};
-
 const getFormattedDate = (date, format) => date ? dayjs(date).format(format) : '';
 
 const getDatesDiff = (start, end) => start && end ? dayjs(end).diff(dayjs(start), 'd') : '';
@@ -40,4 +31,6 @@ const camelize = (item) => {
 
 const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1);
 
-export {DateTimeFormats, getRandomArrayElement, getRandomInteger, getFormattedDate, getDatesDiff, camelize, capitalizeFirstLetter};
+const updateItem = (items, update) => items.map((item) => item.id === update.id ? update : item);
+
+export {DateTimeFormats, getFormattedDate, getDatesDiff, camelize, capitalizeFirstLetter, updateItem};

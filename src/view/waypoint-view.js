@@ -1,12 +1,12 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import {DateTimeFormats, getDatesDiff, getFormattedDate} from '../utils';
+import {DateTimeFormats, getDatesDiff, getFormattedDate} from '../utils.js';
 
 function createWaypointTemplate(waypoint, destinations, offers) {
   const {basePrice, dateFrom, dateTo, destination, type, isFavorite} = waypoint;
   const currentDestination = destinations.find((item) => item.id === destination);
   const {name} = currentDestination;
-  const typeOffers = offers.find((offer) => offer.type === type).offers;
-  const pointOffers = typeOffers.filter((typeOffer) => waypoint.offers.includes(typeOffer.id));
+  const typeOffers = offers.find((offer) => offer.type === type);
+  const pointOffers = typeOffers ? typeOffers.offers.filter((typeOffer) => waypoint.offers.includes(typeOffer.id)) : [];
   const createOffersTemplate = () => pointOffers.length === 0 ? '' : pointOffers.map((offer) => `<li class="event__offer">
                     <span class="event__offer-title">${offer.title}</span>
                     &plus;&euro;&nbsp;
@@ -62,16 +62,20 @@ export default class WaypointView extends AbstractView{
   #destinations = null;
   #offers = null;
   #handleEditClick = null;
+  #handleFavoriteClick = null;
 
-  constructor({waypoint, destinations, offers, onEditClick}) {
+  constructor({waypoint, destinations, offers, onEditClick, onFavoriteClick}) {
     super();
     this.#waypoint = waypoint;
     this.#destinations = destinations;
     this.#offers = offers;
     this.#handleEditClick = onEditClick;
+    this.#handleFavoriteClick = onFavoriteClick;
 
     this.element.querySelector('.event__rollup-btn')
       .addEventListener('click', this.#editClickHandler);
+    this.element.querySelector('.event__favorite-btn')
+      .addEventListener('click', this.#favoriteClickHandler);
   }
 
   get template() {
@@ -81,5 +85,10 @@ export default class WaypointView extends AbstractView{
   #editClickHandler = (evt) => {
     evt.preventDefault();
     this.#handleEditClick();
+  };
+
+  #favoriteClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleFavoriteClick();
   };
 }
