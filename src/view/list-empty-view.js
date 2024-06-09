@@ -22,7 +22,7 @@ const createListEmptyTemplate = (filter) => {
           <p class="trip-events__msg">${currentFilter}</p>
 
           <!--
-            Значение отображаемого текста зависит от выбранного фильтра :
+            Значение отображаемого текста зависит от выбранного фильтра:
               * Everthing – 'Click New Event to create your first point'
               * Past — 'There are no past events now';
               * Present — 'There are no present events now';
