@@ -5,8 +5,8 @@ function createWaypointTemplate(waypoint, destinations, offers) {
   const {basePrice, dateFrom, dateTo, destination, type, isFavorite} = waypoint;
   const currentDestination = destinations.find((item) => item.id === destination);
   const {name} = currentDestination;
-  const typeOffers = offers.find((offer) => offer.type === type).offers;
-  const pointOffers = typeOffers.filter((typeOffer) => waypoint.offers.includes(typeOffer.id));
+  const typeOffers = offers.find((offer) => offer.type === type);
+  const pointOffers = typeOffers ? typeOffers.offers.filter((typeOffer) => waypoint.offers.includes(typeOffer.id)) : [];
   const createOffersTemplate = () => pointOffers.length === 0 ? '' : pointOffers.map((offer) => `<li class="event__offer">
                     <span class="event__offer-title">${offer.title}</span>
                     &plus;&euro;&nbsp;

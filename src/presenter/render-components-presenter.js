@@ -1,4 +1,4 @@
-import {render} from '../framework/render.js';
+import {remove, render} from '../framework/render.js';
 import SortView from '../view/sort-view.js';
 import FiltersView from '../view/filters-view.js';
 import WaypointListView from '../view/waypoint-list-view.js';
@@ -28,7 +28,7 @@ export default class RenderComponentsPresenter {
   #offers = [];
   #filteredTrips = null;
   #waypointPresenters = new Map();
-  #currentSortType = SortTypes.DAY;
+  #currentSortType = null;
   #initialWaypoints = [];
 
   init() {
@@ -66,12 +66,15 @@ export default class RenderComponentsPresenter {
     }
 
     this.#sortWaypoints(sortType);
+    remove(this.#sortComponent);
+    this.#renderSort();
     this.#clearWaypointList();
     this.#renderWaypoints();
   };
 
   #renderSort() {
     this.#sortComponent = new SortView({
+      currentSortType: this.#currentSortType,
       onSortTypeChange: this.#handleSortTypeChange
     });
 

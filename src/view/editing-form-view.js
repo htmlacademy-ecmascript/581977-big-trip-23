@@ -15,7 +15,7 @@ function createEditingFormTemplate(waypoint, destinations, offers) {
                           <label class="event__type-label  event__type-label--${tripType.toLowerCase()}" for="event-type-${tripType.toLowerCase()}-1">${tripType}</label>
                         </div>`).join('');
   const createCityNamesTemplate = () => CITY_NAMES.map((cityName) => `<option value="${cityName}"></option>`).join('');
-  const createOffersTemplate = () => typeOffers.offers.length === 0 ? '' : `<section class="event__section  event__section--offers">
+  const createOffersTemplate = () => (typeof typeOffers === 'undefined' || typeOffers.offers.length === 0) ? '' : `<section class="event__section  event__section--offers">
                     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
                     <div class="event__available-offers">
                       ${typeOffers.offers.map((offer) => `<div class="event__offer-selector">
