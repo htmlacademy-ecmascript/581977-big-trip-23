@@ -24,7 +24,8 @@ export default class NewWaypointPresenter {
       destinations: destinations,
       offers: offers,
       onFormSubmit: this.#handleFormSubmit,
-      onDeleteClick: this.#handleDeleteClick
+      onDeleteClick: this.#handleDeleteClick,
+      onEditCloseClick: this.#handleEditCloseClick,
     });
 
     render(this.#waypointEditComponent, this.#waypointListContainer, RenderPosition.AFTERBEGIN);
@@ -63,5 +64,9 @@ export default class NewWaypointPresenter {
       evt.preventDefault();
       this.destroy();
     }
+  };
+
+  #handleEditCloseClick = () => {
+    this.destroy();
   };
 }
