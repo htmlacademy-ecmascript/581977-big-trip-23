@@ -13,24 +13,6 @@ const getDatesDiff = (start, end) => start && end ? dayjs(end).diff(dayjs(start)
 
 const isDatesEqual = (dateA, dateB) => (dateA === null && dateB === null) || dayjs(dateA).isSame(dateB, 'D');
 
-const snakeToCamel = (str) =>
-  str.toLowerCase().replace(/([-_][a-z])/g, (group) =>
-    group
-      .toUpperCase()
-      .replace('-', '')
-      .replace('_', '')
-  );
-
-const camelize = (item) => {
-  for (const key of Object.keys(item)) {
-    if(key.includes('_')) {
-      item[snakeToCamel(key)] = item[key];
-      delete item[key];
-    }
-  }
-  return item;
-};
-
 const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1);
 
-export {DateTimeFormats, getFormattedDate, getDatesDiff, camelize, capitalizeFirstLetter, isDatesEqual};
+export {DateTimeFormats, getFormattedDate, getDatesDiff, capitalizeFirstLetter, isDatesEqual};

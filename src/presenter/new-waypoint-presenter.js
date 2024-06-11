@@ -50,9 +50,8 @@ export default class NewWaypointPresenter {
     this.#handleDataChange(
       UserAction.ADD_WAYPOINT,
       UpdateType.MINOR,
-      {id: 1234567890, ...waypoint},
+      waypoint
     );
-    this.destroy();
   };
 
   #handleDeleteClick = () => {
@@ -69,4 +68,23 @@ export default class NewWaypointPresenter {
   #handleEditCloseClick = () => {
     this.destroy();
   };
+
+  setSaving() {
+    this.#waypointEditComponent.updateElement({
+      isDisabled: true,
+      isSaving: true,
+    });
+  }
+
+  setAborting() {
+    const resetFormState = () => {
+      this.#waypointEditComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#waypointEditComponent.shake(resetFormState);
+  }
 }

@@ -1,14 +1,24 @@
-import WaypointsModal from './model/waypoints-modal.js';
+import WaypointsModel from './model/waypoints-model.js';
 import RenderComponentsPresenter from './presenter/render-components-presenter.js';
-import DestinationsModal from './model/destinations-modal';
+import DestinationsModel from './model/destinations-model';
 import OffersModel from './model/offers-model';
 import FilterModel from './model/filter-model';
 import FilterPresenter from './presenter/filter-presenter';
 import NewEventButtonView from './view/new-event-button-view';
+import DataApiService from './data-api-service';
 
-const waypointsModel = new WaypointsModal();
-const destinationsModel = new DestinationsModal();
-const offersModel = new OffersModel();
+const AUTHORIZATION = 'Basic ICfFjzLhxCfSIJF';
+const ENDPOINT = 'https://23.objects.htmlacademy.pro/big-trip';
+
+const waypointsModel = new WaypointsModel({
+  dataApiService: new DataApiService(ENDPOINT, AUTHORIZATION),
+});
+const destinationsModel = new DestinationsModel({
+  dataApiService: new DataApiService(ENDPOINT, AUTHORIZATION)
+});
+const offersModel = new OffersModel({
+  dataApiService: new DataApiService(ENDPOINT, AUTHORIZATION)
+});
 const filterModel = new FilterModel();
 
 const tripControlsFiltersElement = document.querySelector('.trip-controls__filters');
@@ -40,5 +50,12 @@ function handleNewEventButtonClick() {
   newEventButtonComponent.element.disabled = true;
 }
 
+newEventButtonComponent.element.disabled = true;
 filterPresenter.init();
 renderComponentsPresenter.init();
+
+Promise.all([destinationsModel.init(), offersModel.init()]).then(() => {
+  waypointsModel.init().finally(() => {
+    newEventButtonComponent.element.disabled = false;
+  });
+});
