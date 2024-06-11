@@ -5,14 +5,12 @@ import OffersModel from './model/offers-model';
 import FilterModel from './model/filter-model';
 import FilterPresenter from './presenter/filter-presenter';
 import NewEventButtonView from './view/new-event-button-view';
-import {render} from './framework/render';
 
 const waypointsModel = new WaypointsModal();
 const destinationsModel = new DestinationsModal();
 const offersModel = new OffersModel();
 const filterModel = new FilterModel();
 
-const tripMainElement = document.querySelector('.trip-main');
 const tripControlsFiltersElement = document.querySelector('.trip-controls__filters');
 
 const renderComponentsPresenter = new RenderComponentsPresenter({
