@@ -1,63 +1,81 @@
 import {remove, render} from '../framework/render.js';
 import SortView from '../view/sort-view.js';
-import FiltersView from '../view/filters-view.js';
 import WaypointListView from '../view/waypoint-list-view.js';
 import ListEmptyView from '../view/list-empty-view.js';
-import {generateFilter} from '../mock/filters.js';
 import WaypointPresenter from './waypoint-presenter.js';
-import {updateItem} from '../utils.js';
-import {SortTypes} from '../const.js';
+import {FilterTypes, SortTypes as SortType, SortTypes, UpdateType, UserAction} from '../const.js';
 import {sortByPrice, sortByTime} from '../sort.js';
+import {filter} from '../filter';
+import NewWaypointPresenter from './new-waypoint-presenter';
 
 export default class RenderComponentsPresenter {
   #waypointsModel = null;
-
-  constructor({waypointsModel}) {
-    this.#waypointsModel = waypointsModel;
-  }
+  #destinationsModel = null;
+  #offersModel = null;
+  #filterModel = null;
 
   #waypointListComponent = new WaypointListView();
+  #noWaypointComponent = null;
   #sortComponent = null;
 
   tripEventsElement = document.querySelector('.trip-events');
-  tripControlsFiltersElement = document.querySelector('.trip-controls__filters');
   pageBodyContainer = document.querySelector('.page-main > .page-body__container');
 
-  #waypoints = [];
-  #destinations = [];
-  #offers = [];
-  #filteredTrips = null;
   #waypointPresenters = new Map();
+  #newWaypointPresenter = null;
   #currentSortType = null;
-  #initialWaypoints = [];
+  #filterType = FilterTypes.EVERYTHING;
+
+  constructor({waypointsModel, destinationsModel, offersModel, filterModel, onNewWaypointDestroy}) {
+    this.#waypointsModel = waypointsModel;
+    this.#destinationsModel = destinationsModel;
+    this.#offersModel = offersModel;
+    this.#filterModel = filterModel;
+
+    this.#newWaypointPresenter = new NewWaypointPresenter({
+      waypointListContainer: this.#waypointListComponent.element,
+      onDataChange: this.#handleViewAction,
+      onDestroy: onNewWaypointDestroy
+    });
+
+    this.#waypointsModel.addObserver(this.#handleModelEvent);
+    this.#filterModel.addObserver(this.#handleModelEvent);
+  }
+
+  get waypoints() {
+    this.#filterType = this.#filterModel.filter;
+    const waypoints = this.#waypointsModel.waypoints;
+    const filteredWaypoints = filter[this.#filterType](waypoints);
+
+    switch (this.#currentSortType) {
+      case SortTypes.PRICE:
+        return filteredWaypoints.sort(sortByPrice);
+      case SortTypes.TIME:
+        return filteredWaypoints.sort(sortByTime);
+      case SortTypes.EVENT:
+      case SortTypes.OFFER:
+      case SortTypes.DAY:
+        break;
+    }
+    return filteredWaypoints;
+  }
+
+  get destinations() {
+    return this.#destinationsModel.destinations;
+  }
+
+  get offers() {
+    return this.#offersModel.offers;
+  }
 
   init() {
-    this.#waypoints = [...this.#waypointsModel.waypoints];
-    this.#destinations = [...this.#waypointsModel.destinations];
-    this.#offers = [...this.#waypointsModel.offers];
-    this.#filteredTrips = generateFilter(this.#waypoints);
-
-    this.#initialWaypoints = [...this.#waypointsModel.waypoints];
-
     this.#renderBoard();
   }
 
-  #sortWaypoints(sortType) {
-    switch (sortType) {
-      case SortTypes.PRICE:
-        this.#waypoints.sort(sortByPrice);
-        break;
-      case SortTypes.TIME:
-        this.#waypoints.sort(sortByTime);
-        break;
-      case SortTypes.EVENT:
-      case SortTypes.OFFER:
-        break;
-      case SortTypes.DAY:
-        this.#waypoints = [...this.#initialWaypoints];
-    }
-
-    this.#currentSortType = sortType;
+  createWaypoint() {
+    this.#currentSortType = SortType.DAY;
+    this.#filterModel.setFilter(UpdateType.MAJOR, FilterTypes.EVERYTHING);
+    this.#newWaypointPresenter.init(this.destinations, this.offers);
   }
 
   #handleSortTypeChange = (sortType) => {
@@ -65,11 +83,10 @@ export default class RenderComponentsPresenter {
       return;
     }
 
-    this.#sortWaypoints(sortType);
+    this.#currentSortType = sortType;
     remove(this.#sortComponent);
-    this.#renderSort();
-    this.#clearWaypointList();
-    this.#renderWaypoints();
+    this.#clearBoard();
+    this.#renderBoard();
   };
 
   #renderSort() {
@@ -81,20 +98,40 @@ export default class RenderComponentsPresenter {
     render(this.#sortComponent, this.tripEventsElement);
   }
 
-  #renderFilters() {
-    render(new FiltersView({filteredTrips: this.#filteredTrips}), this.tripControlsFiltersElement);
-  }
+  #handleViewAction = (actionType, updateType, update) => {
+    switch (actionType) {
+      case UserAction.UPDATE_WAYPOINT:
+        this.#waypointsModel.updateWaypoint(updateType, update);
+        break;
+      case UserAction.ADD_WAYPOINT:
+        this.#waypointsModel.addWaypoint(updateType, update);
+        break;
+      case UserAction.DELETE_WAYPOINT:
+        this.#waypointsModel.deleteWaypoint(updateType, update);
+        break;
+    }
+  };
 
-  #handleWaypointChange(updatedWaypoint) {
-    this.#waypoints = updateItem(this.#waypoints, updatedWaypoint);
-    this.#initialWaypoints = updateItem(this.#initialWaypoints, updatedWaypoint);
-    this.#waypointPresenters.get(updatedWaypoint.id).init(updatedWaypoint, this.#destinations, this.#offers);
-  }
+  #handleModelEvent = (updateType, data) => {
+    switch (updateType) {
+      case UpdateType.PATCH:
+        this.#waypointPresenters.get(data.id).init(data, this.destinations, this.offers);
+        break;
+      case UpdateType.MINOR:
+        this.#clearBoard();
+        this.#renderBoard();
+        break;
+      case UpdateType.MAJOR:
+        this.#clearBoard({resetSortType: true});
+        this.#renderBoard();
+        break;
+    }
+  };
 
   #renderWaypoint(waypoint, destinations, offers) {
     const waypointPresenter = new WaypointPresenter({
       waypointListContainer: this.#waypointListComponent.element,
-      onDataChange: this.#handleWaypointChange.bind(this),
+      onDataChange: this.#handleViewAction.bind(this),
       onModeChange: this.#handleModeChange
     });
     waypointPresenter.init(waypoint, destinations, offers);
@@ -102,32 +139,49 @@ export default class RenderComponentsPresenter {
   }
 
   #renderListEmpty() {
-    render(new ListEmptyView(), this.pageBodyContainer);
+    this.#noWaypointComponent = new ListEmptyView({
+      filterType: this.#filterType
+    });
+
+    render(this.#noWaypointComponent, this.pageBodyContainer);
   }
 
-  #renderWaypoints() {
-    render(this.#waypointListComponent, this.tripEventsElement);
+  #renderWaypoints(waypoints, destinations, offers) {
+    waypoints.forEach((waypoint) => this.#renderWaypoint(waypoint, destinations, offers));
+  }
 
-    if (this.#waypoints.length === 0) {
+  #handleModeChange = () => {
+    this.#newWaypointPresenter.destroy();
+    this.#waypointPresenters.forEach((presenter) => presenter.resetView());
+  };
+
+  #clearBoard({resetSortType = false} = {}) {
+    this.#newWaypointPresenter.destroy();
+    this.#waypointPresenters.forEach((presenter) => presenter.destroy());
+    this.#waypointPresenters.clear();
+
+    remove(this.#sortComponent);
+
+    if (this.#noWaypointComponent) {
+      remove(this.#noWaypointComponent);
+    }
+
+    if (resetSortType) {
+      this.#currentSortType = SortType.DAY;
+    }
+  }
+
+  #renderBoard() {
+    const waypoints = this.waypoints;
+    const waypointCount = waypoints.length;
+
+    if (waypointCount === 0) {
       this.#renderListEmpty();
       return;
     }
 
-    this.#waypoints.forEach((waypoint) => this.#renderWaypoint(waypoint, this.#destinations, this.#offers));
-  }
-
-  #clearWaypointList() {
-    this.#waypointPresenters.forEach((presenter) => presenter.destroy());
-    this.#waypointPresenters.clear();
-  }
-
-  #handleModeChange = () => {
-    this.#waypointPresenters.forEach((presenter) => presenter.resetView());
-  };
-
-  #renderBoard() {
-    this.#renderFilters();
     this.#renderSort();
-    this.#renderWaypoints();
+    render(this.#waypointListComponent, this.tripEventsElement);
+    this.#renderWaypoints(waypoints, this.destinations, this.offers);
   }
 }

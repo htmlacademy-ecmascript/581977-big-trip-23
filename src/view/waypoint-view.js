@@ -4,7 +4,7 @@ import {DateTimeFormats, getDatesDiff, getFormattedDate} from '../utils.js';
 function createWaypointTemplate(waypoint, destinations, offers) {
   const {basePrice, dateFrom, dateTo, destination, type, isFavorite} = waypoint;
   const currentDestination = destinations.find((item) => item.id === destination);
-  const {name} = currentDestination;
+  //const {name} = currentDestination;
   const typeOffers = offers.find((offer) => offer.type === type);
   const pointOffers = typeOffers ? typeOffers.offers.filter((typeOffer) => waypoint.offers.includes(typeOffer.id)) : [];
   const createOffersTemplate = () => pointOffers.length === 0 ? '' : pointOffers.map((offer) => `<li class="event__offer">
@@ -28,7 +28,7 @@ function createWaypointTemplate(waypoint, destinations, offers) {
                 <div class="event__type">
                   <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
                 </div>
-                <h3 class="event__title">${type} ${name}</h3>
+                <h3 class="event__title">${type} ${currentDestination ? currentDestination.name : ''}</h3>
                 <div class="event__schedule">
                   <p class="event__time">
                     <time class="event__start-time" datetime="${formattedDates.startDate}T${formattedDates.startTime}">${formattedDates.startTime}</time>

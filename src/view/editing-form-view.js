@@ -3,15 +3,27 @@ import {capitalizeFirstLetter, DateTimeFormats, getFormattedDate} from '../utils
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
+import he from 'he';
+
+const BLANK_WAYPOINT = {
+  id: null,
+  basePrice: 0,
+  dateFrom: null,
+  dateTo: null,
+  destination: null,
+  isFavorite: false,
+  offers: null,
+  type: 'flight'
+};
 
 function createEditingFormTemplate(waypoint, destinations, offers) {
   const {basePrice, dateFrom, dateTo, destination, type} = waypoint;
   const currentDestination = destinations.find((item) => item.id === destination);
-  const {description} = currentDestination;
+  const {description, pictures} = currentDestination ? currentDestination : '';
   const typeOffers = offers.find((offer) => offer.type === type);
   const pointOffers = typeOffers ? typeOffers.offers.filter((typeOffer) => waypoint.offers.includes(typeOffer.id)) : [];
   const createTripTypesTemplate = () => TRIP_TYPES.map((tripType) => `<div class="event__type-item">
-                          <input id="event-type-${tripType.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${tripType.toLowerCase()}">
+                          <input id="event-type-${tripType.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${tripType.toLowerCase()}" ${tripType.toLowerCase() === type ? 'checked' : ''}>
                           <label class="event__type-label  event__type-label--${tripType.toLowerCase()}" for="event-type-${tripType.toLowerCase()}-1">${tripType}</label>
                         </div>`).join('');
   const createCityNamesTemplate = () => CITY_NAMES.map((cityName) => `<option value="${cityName}"></option>`).join('');
@@ -31,6 +43,11 @@ function createEditingFormTemplate(waypoint, destinations, offers) {
   const createDescriptionTemplate = () => description ? `<section class="event__section  event__section--destination">
                     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
                     <p class="event__destination-description">${description}</p>
+                    <div class="event__photos-container">
+                      <div class="event__photos-tape">
+                        ${pictures.map((picture) => `<img class="event__photo" src="${picture.src}" alt="${picture.description}">`)}
+                      </div>
+                    </div>
                   </section>` : '';
   const typesTemplate = createTripTypesTemplate();
   const cityNamesTemplate = createCityNamesTemplate();
@@ -61,9 +78,9 @@ function createEditingFormTemplate(waypoint, destinations, offers) {
 
                   <div class="event__field-group  event__field-group--destination">
                     <label class="event__label  event__type-output" for="event-destination-1">
-                      ${capitalizeFirstLetter(type)}
+                      ${type ? capitalizeFirstLetter(type) : ''}
                     </label>
-                    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${currentDestination.name}" list="destination-list-1">
+                    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${he.encode(currentDestination ? currentDestination.name : '')}" list="destination-list-1">
                     <datalist id="destination-list-1">
                       ${cityNamesTemplate}
                     </datalist>
@@ -103,14 +120,16 @@ export default class EditingFormView extends AbstractStatefulView{
   #destinations = null;
   #offers = null;
   #handleFormSubmit = null;
+  #handleDeleteClick = null;
   #datepicker = null;
 
-  constructor({waypoint, destinations, offers, onFormSubmit}) {
+  constructor({waypoint = BLANK_WAYPOINT, destinations, offers, onFormSubmit, onDeleteClick}) {
     super();
     this._setState(EditingFormView.parseWaypointToState(waypoint));
     this.#destinations = destinations;
     this.#offers = offers;
     this.#handleFormSubmit = onFormSubmit;
+    this.#handleDeleteClick = onDeleteClick;
 
     this._restoreHandlers();
   }
@@ -131,15 +150,12 @@ export default class EditingFormView extends AbstractStatefulView{
   }
 
   _restoreHandlers() {
-    this.element.querySelector('form')
-      .addEventListener('submit', this.#formSubmitHandler);
+    this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
     this.element.querySelector('.event__type-list').addEventListener('change', this.#typeClickHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationInputHandler);
-
     this.element.querySelector('.event__input--price').addEventListener('input', this.#priceInputHandler);
-
     this.element.querySelector('.event__details').addEventListener('change', this.#offerInputHandler);
-
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#formDeleteClickHandler);
     this.#setDatepickerFrom();
     this.#setDatepickerTo();
   }
@@ -172,6 +188,7 @@ export default class EditingFormView extends AbstractStatefulView{
     this.#datepicker = flatpickr(
       this.element.querySelector('input[name="event-start-time"]'),
       {
+        maxDate: this._state.dateTo,
         enableTime: true,
         dateFormat: 'Y/m/d H:i',
         defaultDate: this._state.dateFrom,
@@ -184,6 +201,7 @@ export default class EditingFormView extends AbstractStatefulView{
     this.#datepicker = flatpickr(
       this.element.querySelector('input[name="event-end-time"]'),
       {
+        minDate: this._state.dateFrom,
         enableTime: true,
         dateFormat: 'Y/m/d H:i',
         defaultDate: this._state.dateTo,
@@ -195,6 +213,11 @@ export default class EditingFormView extends AbstractStatefulView{
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
     this.#handleFormSubmit(EditingFormView.parseStateToWaypoint(this._state));
+  };
+
+  #formDeleteClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleDeleteClick(EditingFormView.parseStateToWaypoint(this._state));
   };
 
   #typeClickHandler = (evt) => {
