@@ -21,7 +21,7 @@ function createEditingFormTemplate(waypoint, destinations, offers) {
   const currentDestination = destinations.find((item) => item.id === destination);
   const {description, pictures} = currentDestination ? currentDestination : '';
   const typeOffers = offers.find((offer) => offer.type === type);
-  const pointOffers = typeOffers ? typeOffers.offers.filter((typeOffer) => waypoint.offers.includes(typeOffer.id)) : [];
+  const pointOffers = typeOffers && waypoint.offers ? typeOffers.offers.filter((typeOffer) => waypoint.offers.includes(typeOffer.id)) : [];
   const createTripTypesTemplate = () => TRIP_TYPES.map((tripType) => `<div class="event__type-item">
                           <input id="event-type-${tripType.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${tripType.toLowerCase()}" ${tripType.toLowerCase() === type ? 'checked' : ''}>
                           <label class="event__type-label  event__type-label--${tripType.toLowerCase()}" for="event-type-${tripType.toLowerCase()}-1">${tripType}</label>
@@ -121,15 +121,17 @@ export default class EditingFormView extends AbstractStatefulView{
   #offers = null;
   #handleFormSubmit = null;
   #handleDeleteClick = null;
+  #handleEditCloseClick = null;
   #datepicker = null;
 
-  constructor({waypoint = BLANK_WAYPOINT, destinations, offers, onFormSubmit, onDeleteClick}) {
+  constructor({waypoint = BLANK_WAYPOINT, destinations, offers, onFormSubmit, onDeleteClick, onEditCloseClick}) {
     super();
     this._setState(EditingFormView.parseWaypointToState(waypoint));
     this.#destinations = destinations;
     this.#offers = offers;
     this.#handleFormSubmit = onFormSubmit;
     this.#handleDeleteClick = onDeleteClick;
+    this.#handleEditCloseClick = onEditCloseClick;
 
     this._restoreHandlers();
   }
@@ -156,6 +158,7 @@ export default class EditingFormView extends AbstractStatefulView{
     this.element.querySelector('.event__input--price').addEventListener('input', this.#priceInputHandler);
     this.element.querySelector('.event__details').addEventListener('change', this.#offerInputHandler);
     this.element.querySelector('.event__reset-btn').addEventListener('click', this.#formDeleteClickHandler);
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editCloseClickHandler);
     this.#setDatepickerFrom();
     this.#setDatepickerTo();
   }
@@ -247,6 +250,10 @@ export default class EditingFormView extends AbstractStatefulView{
 
   #offerInputHandler = (evt) => {
     evt.preventDefault();
+    if (!this._state.offers) {
+      this._state.offers = [];
+    }
+
     if (this._state.offers.some((item) => item === evt.target.dataset.id)) {
       this.updateElement({
         offers: this._state.offers.filter((item) => item !== evt.target.dataset.id)
@@ -256,5 +263,10 @@ export default class EditingFormView extends AbstractStatefulView{
         offers: this._state.offers.concat([evt.target.dataset.id])
       });
     }
+  };
+
+  #editCloseClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleEditCloseClick();
   };
 }

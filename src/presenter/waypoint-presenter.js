@@ -49,7 +49,8 @@ export default class WaypointPresenter {
       destinations: this.#destinations,
       offers: this.#offers,
       onFormSubmit: this.#handleFormSubmit,
-      onDeleteClick: this.#handleDeleteClick
+      onDeleteClick: this.#handleDeleteClick,
+      onEditCloseClick: this.#handleEditCloseClick,
     });
 
     if (prevWaypointComponent === null || prevWaypointEditComponent === null) {
@@ -112,6 +113,11 @@ export default class WaypointPresenter {
 
   #handleEditClick = () => {
     this.#replaceCardToForm();
+  };
+
+  #handleEditCloseClick = () => {
+    this.#waypointEditComponent.reset(this.#waypoint);
+    this.#replaceFormToCard();
   };
 
   #handleFormSubmit = (update) => {

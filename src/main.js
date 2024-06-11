@@ -40,7 +40,5 @@ function handleNewEventButtonClick() {
   newEventButtonComponent.element.disabled = true;
 }
 
-//render(newEventButtonComponent, tripMainElement);
-
 filterPresenter.init();
 renderComponentsPresenter.init();
