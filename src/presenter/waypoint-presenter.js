@@ -1,6 +1,8 @@
 import WaypointView from '../view/waypoint-view.js';
 import EditingFormView from '../view/editing-form-view.js';
 import {remove, render, replace} from '../framework/render.js';
+import {UpdateType, UserAction} from '../const';
+import {isDatesEqual} from '../utils';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -46,7 +48,9 @@ export default class WaypointPresenter {
       waypoint: this.#waypoint,
       destinations: this.#destinations,
       offers: this.#offers,
-      onFormSubmit: this.#handleFormSubmit
+      onFormSubmit: this.#handleFormSubmit,
+      onDeleteClick: this.#handleDeleteClick,
+      onEditCloseClick: this.#handleEditCloseClick,
     });
 
     if (prevWaypointComponent === null || prevWaypointEditComponent === null) {
@@ -100,15 +104,39 @@ export default class WaypointPresenter {
   };
 
   #handleFavoriteClick = () => {
-    this.#handleDataChange({...this.#waypoint, isFavorite: !this.#waypoint.isFavorite});
+    this.#handleDataChange(
+      UserAction.UPDATE_WAYPOINT,
+      UpdateType.MINOR,
+      {...this.#waypoint, isFavorite: !this.#waypoint.isFavorite},
+    );
   };
 
   #handleEditClick = () => {
     this.#replaceCardToForm();
   };
 
-  #handleFormSubmit = (waypoint) => {
-    this.#handleDataChange(waypoint);
+  #handleEditCloseClick = () => {
+    this.#waypointEditComponent.reset(this.#waypoint);
     this.#replaceFormToCard();
+  };
+
+  #handleFormSubmit = (update) => {
+    const isMinorUpdate =
+      !isDatesEqual(this.#waypoint.dateFrom, update.dateFrom) && !isDatesEqual(this.#waypoint.dateTo, update.dateTo);
+
+    this.#handleDataChange(
+      UserAction.UPDATE_WAYPOINT,
+      isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
+      update,
+    );
+    this.#replaceFormToCard();
+  };
+
+  #handleDeleteClick = (waypoint) => {
+    this.#handleDataChange(
+      UserAction.DELETE_WAYPOINT,
+      UpdateType.MINOR,
+      waypoint,
+    );
   };
 }

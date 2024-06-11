@@ -11,6 +11,8 @@ const getFormattedDate = (date, format) => date ? dayjs(date).format(format) : '
 
 const getDatesDiff = (start, end) => start && end ? dayjs(end).diff(dayjs(start), 'd') : '';
 
+const isDatesEqual = (dateA, dateB) => (dateA === null && dateB === null) || dayjs(dateA).isSame(dateB, 'D');
+
 const snakeToCamel = (str) =>
   str.toLowerCase().replace(/([-_][a-z])/g, (group) =>
     group
@@ -31,6 +33,4 @@ const camelize = (item) => {
 
 const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1);
 
-const updateItem = (items, update) => items.map((item) => item.id === update.id ? update : item);
-
-export {DateTimeFormats, getFormattedDate, getDatesDiff, camelize, capitalizeFirstLetter, updateItem};
+export {DateTimeFormats, getFormattedDate, getDatesDiff, camelize, capitalizeFirstLetter, isDatesEqual};

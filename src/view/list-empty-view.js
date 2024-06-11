@@ -1,45 +1,33 @@
 import AbstractView from '../framework/view/abstract-view.js';
+import {FilterTypes} from '../const';
 
-const createListEmptyTemplate = (filter) => {
-  const getCurrentFilter = () => {
-    switch (filter) {
-      case 'Past':
-        return 'There are no past events now';
-      case 'Present':
-        return 'There are no present events now';
-      case 'Future':
-        return 'There are no future events now';
-      default:
-        return 'Click New Event to create your first point';
-    }
-  };
+const NoWaypointsTextType = {
+  [FilterTypes.EVERYTHING]: 'Click New Event to create your first point',
+  [FilterTypes.PAST]: 'There are no past events now',
+  [FilterTypes.PRESENT]: 'There are no present events now',
+  [FilterTypes.FUTURE]: 'There are no future events now'
+};
 
-  const currentFilter = getCurrentFilter();
+const createListEmptyTemplate = (filterType) => {
+  const noWaypointTextValue = NoWaypointsTextType[filterType];
 
   return `<section class="trip-events">
           <h2 class="visually-hidden">Trip events</h2>
 
-          <p class="trip-events__msg">${currentFilter}</p>
+          <p class="trip-events__msg">${noWaypointTextValue}</p>
 
-          <!--
-            Значение отображаемого текста зависит от выбранного фильтра:
-              * Everthing – 'Click New Event to create your first point'
-              * Past — 'There are no past events now';
-              * Present — 'There are no present events now';
-              * Future — 'There are no future events now'.
-          -->
         </section>`;
 };
 
 export default class ListEmptyView extends AbstractView{
-  #filter = '';
+  #filterType = null;
 
-  constructor(filter) {
+  constructor({filterType}) {
     super();
-    this.#filter = filter;
+    this.#filterType = filterType;
   }
 
   get template() {
-    return createListEmptyTemplate(this.#filter);
+    return createListEmptyTemplate(this.#filterType);
   }
 }

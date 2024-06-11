@@ -18,4 +18,16 @@ const SortTypes = {
   OFFER: 'sort-offer'
 };
 
-export {TRIP_TYPES, CITY_NAMES, PICTURES_URL, MOCKED_DESCRIPTION, FilterTypes, SortTypes};
+const UserAction = {
+  UPDATE_WAYPOINT: 'UPDATE_WAYPOINT',
+  ADD_WAYPOINT: 'ADD_WAYPOINT',
+  DELETE_WAYPOINT: 'DELETE_WAYPOINT',
+};
+
+const UpdateType = {
+  PATCH: 'PATCH',
+  MINOR: 'MINOR',
+  MAJOR: 'MAJOR',
+};
+
+export {TRIP_TYPES, CITY_NAMES, PICTURES_URL, MOCKED_DESCRIPTION, FilterTypes, SortTypes, UserAction, UpdateType};
