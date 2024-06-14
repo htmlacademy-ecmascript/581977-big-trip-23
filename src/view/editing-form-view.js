@@ -1,6 +1,6 @@
 import {TRIP_TYPES} from '../const.js';
 import {capitalizeFirstLetter, DateTimeFormats, getFormattedDate} from '../utils.js';
-import AbstractStatefulView from '../framework/view/abstract-stateful-view';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import he from 'he';
@@ -39,15 +39,27 @@ function createEditingFormTemplate(waypoint, destinations, offers) {
                       </div>`).join('')}
                     </div>
                   </section>`;
+
   const createDescriptionTemplate = () => description ? `<section class="event__section  event__section--destination">
                     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
                     <p class="event__destination-description">${description}</p>
-                    <div class="event__photos-container">
+                    ${pictures.length !== 0 ? `<div class="event__photos-container">
                       <div class="event__photos-tape">
                         ${pictures.map((picture) => `<img class="event__photo" src="${picture.src}" alt="${picture.description}">`).join('')}
                       </div>
-                    </div>
+                    </div>` : ''}
                   </section>` : '';
+  const getResetButtonName = () => {
+    if (waypoint.id) {
+      if (isDeleting) {
+        return 'Deleting...';
+      } else {
+        return 'Delete';
+      }
+    } else {
+      return 'Cancel';
+    }
+  };
   const typesTemplate = createTripTypesTemplate();
   const cityNamesTemplate = createCityNamesTemplate();
   const offersTemplate = createOffersTemplate();
@@ -56,6 +68,7 @@ function createEditingFormTemplate(waypoint, destinations, offers) {
     end: getFormattedDate(dateTo, DateTimeFormats.DATETIME)
   };
   const descriptionTemplate = createDescriptionTemplate();
+  const resetButtonName = getResetButtonName();
 
   return (`            <li class="trip-events__item">
               <form class="event event--edit" action="#" method="post">
@@ -102,7 +115,7 @@ function createEditingFormTemplate(waypoint, destinations, offers) {
                   </div>
 
                   <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? 'disabled' : ''}>${isSaving ? 'Saving...' : 'Save'}</button>
-                  <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>${isDeleting ? 'Deleting...' : 'Delete'}</button>
+                  <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>${resetButtonName}</button>
                   <button class="event__rollup-btn" type="button">
                     <span class="visually-hidden">Open event</span>
                   </button>
@@ -136,6 +149,7 @@ export default class EditingFormView extends AbstractStatefulView{
   }
 
   reset(waypoint) {
+    this._state.offers = [];
     this.updateElement(
       EditingFormView.parseWaypointToState(waypoint),
     );
@@ -203,7 +217,7 @@ export default class EditingFormView extends AbstractStatefulView{
       {
         maxDate: this._state.dateTo,
         enableTime: true,
-        dateFormat: 'Y/m/d H:i',
+        dateFormat: 'd/m/y H:i',
         defaultDate: this._state.dateFrom,
         onChange: this.#dateFromChangeHandler,
       }
@@ -216,7 +230,7 @@ export default class EditingFormView extends AbstractStatefulView{
       {
         minDate: this._state.dateFrom,
         enableTime: true,
-        dateFormat: 'Y/m/d H:i',
+        dateFormat: 'd/m/y H:i',
         defaultDate: this._state.dateTo,
         onChange: this.#dateToChangeHandler,
       }
@@ -235,6 +249,7 @@ export default class EditingFormView extends AbstractStatefulView{
 
   #typeClickHandler = (evt) => {
     evt.preventDefault();
+    this._state.offers = [];
     this.updateElement({
       type: evt.target.value
     });

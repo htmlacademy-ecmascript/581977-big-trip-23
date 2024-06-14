@@ -1,5 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import {DateTimeFormats, getDatesDiff, getFormattedDate} from '../utils.js';
+import {DateTimeFormats, getDatesDiffFormatted, getFormattedDate} from '../utils.js';
 
 function createWaypointTemplate(waypoint, destinations, offers) {
   const {basePrice, dateFrom, dateTo, destination, type, isFavorite} = waypoint;
@@ -19,7 +19,7 @@ function createWaypointTemplate(waypoint, destinations, offers) {
     startMonthDay: getFormattedDate(dateFrom, DateTimeFormats.MONTHDAY).toUpperCase(),
     startTime: getFormattedDate(dateFrom, DateTimeFormats.TIME),
     endTime: getFormattedDate(dateTo, DateTimeFormats.TIME),
-    daysDiff: getDatesDiff(dateFrom, dateTo)
+    daysDiff: getDatesDiffFormatted(dateFrom, dateTo)
   };
 
   return (`<li class="trip-events__item">
@@ -35,7 +35,7 @@ function createWaypointTemplate(waypoint, destinations, offers) {
                     &mdash;
                     <time class="event__end-time" datetime="${formattedDates.endDate}T${formattedDates.endTime}">${formattedDates.endTime}</time>
                   </p>
-                  <p class="event__duration">${formattedDates.daysDiff}D</p>
+                  <p class="event__duration">${formattedDates.daysDiff}</p>
                 </div>
                 <p class="event__price">
                   &euro;&nbsp;<span class="event__price-value">${basePrice}</span>
