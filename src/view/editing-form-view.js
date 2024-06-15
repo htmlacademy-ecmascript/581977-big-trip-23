@@ -149,7 +149,7 @@ export default class EditingFormView extends AbstractStatefulView{
   }
 
   reset(waypoint) {
-    this._state.offers = [];
+    this._setState({offers: []});
     this.updateElement(
       EditingFormView.parseWaypointToState(waypoint),
     );
@@ -249,7 +249,7 @@ export default class EditingFormView extends AbstractStatefulView{
 
   #typeClickHandler = (evt) => {
     evt.preventDefault();
-    this._state.offers = [];
+    this._setState({offers: []});
     this.updateElement({
       type: evt.target.value
     });
@@ -276,7 +276,7 @@ export default class EditingFormView extends AbstractStatefulView{
   #offerInputHandler = (evt) => {
     evt.preventDefault();
     if (!this._state.offers) {
-      this._state.offers = [];
+      this._setState({offers: []});
     }
 
     if (this._state.offers.some((item) => item === evt.target.dataset.id)) {
