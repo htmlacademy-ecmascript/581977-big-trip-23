@@ -1,18 +1,26 @@
 import {remove, render, RenderPosition} from '../framework/render.js';
 import {UserAction, UpdateType} from '../const.js';
-import EditingFormView from '../view/editing-form-view';
+import EditingFormView from '../view/editing-form-view.js';
 
 export default class NewWaypointPresenter {
   #waypointListContainer = null;
+
   #handleDataChange = null;
   #handleDestroy = null;
 
   #waypointEditComponent = null;
 
-  constructor({waypointListContainer, onDataChange, onDestroy}) {
+  #tripsModel = null;
+  #noWaypointComponent = null;
+  #pageBodyContainerElement = null;
+
+  constructor({waypointListContainer, onDataChange, onDestroy, tripsModel, noWaypointComponent, pageBodyContainerElement}) {
     this.#waypointListContainer = waypointListContainer;
     this.#handleDataChange = onDataChange;
     this.#handleDestroy = onDestroy;
+    this.#tripsModel = tripsModel;
+    this.#noWaypointComponent = noWaypointComponent;
+    this.#pageBodyContainerElement = pageBodyContainerElement;
   }
 
   init(destinations, offers) {
@@ -43,6 +51,10 @@ export default class NewWaypointPresenter {
     remove(this.#waypointEditComponent);
     this.#waypointEditComponent = null;
 
+    if (this.#tripsModel.waypoints.length === 0) {
+      render(this.#noWaypointComponent, this.#pageBodyContainerElement);
+    }
+
     document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
@@ -50,9 +62,8 @@ export default class NewWaypointPresenter {
     this.#handleDataChange(
       UserAction.ADD_WAYPOINT,
       UpdateType.MINOR,
-      {id: 1234567890, ...waypoint},
+      waypoint
     );
-    this.destroy();
   };
 
   #handleDeleteClick = () => {
@@ -69,4 +80,23 @@ export default class NewWaypointPresenter {
   #handleEditCloseClick = () => {
     this.destroy();
   };
+
+  setSaving() {
+    this.#waypointEditComponent.updateElement({
+      isDisabled: true,
+      isSaving: true,
+    });
+  }
+
+  setAborting() {
+    const resetFormState = () => {
+      this.#waypointEditComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#waypointEditComponent.shake(resetFormState);
+  }
 }

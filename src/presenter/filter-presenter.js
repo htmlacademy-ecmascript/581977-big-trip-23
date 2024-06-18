@@ -1,26 +1,28 @@
 import {render, replace, remove} from '../framework/render.js';
 import FilterView from '../view/filters-view.js';
 import {FilterTypes, UpdateType} from '../const.js';
+import {filter} from '../filter.js';
 
 export default class FilterPresenter {
   #filterContainer = null;
   #filterModel = null;
-  #waypointsModel = null;
+  #tripsModel = null;
 
   #filterComponent = null;
 
-  constructor({filterContainer, filterModel, waypointsModel}) {
+  constructor({filterContainer, filterModel, tripsModel}) {
     this.#filterContainer = filterContainer;
     this.#filterModel = filterModel;
-    this.#waypointsModel = waypointsModel;
+    this.#tripsModel = tripsModel;
 
-    this.#waypointsModel.addObserver(this.#handleModelEvent);
+    this.#tripsModel.addObserver(this.#handleModelEvent);
     this.#filterModel.addObserver(this.#handleModelEvent);
   }
 
   get filters() {
     return Object.values(FilterTypes).map((type) => ({
-      type
+      type,
+      count: filter[type](this.#tripsModel.waypoints).length
     }));
   }
 

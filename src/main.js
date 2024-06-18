@@ -1,22 +1,24 @@
-import WaypointsModal from './model/waypoints-modal.js';
+import TripsModel from './model/trips-model.js';
 import RenderComponentsPresenter from './presenter/render-components-presenter.js';
-import DestinationsModal from './model/destinations-modal';
-import OffersModel from './model/offers-model';
-import FilterModel from './model/filter-model';
-import FilterPresenter from './presenter/filter-presenter';
-import NewEventButtonView from './view/new-event-button-view';
+import FilterModel from './model/filter-model.js';
+import FilterPresenter from './presenter/filter-presenter.js';
+import NewEventButtonView from './view/new-event-button-view.js';
+import DataApiService from './data-api-service.js';
+import {render} from './framework/render.js';
 
-const waypointsModel = new WaypointsModal();
-const destinationsModel = new DestinationsModal();
-const offersModel = new OffersModel();
+const AUTHORIZATION = 'Basic I1fFjzLhVCfSIJF';
+const ENDPOINT = 'https://23.objects.htmlacademy.pro/big-trip';
+
+const tripsModel = new TripsModel({
+  dataApiService: new DataApiService(ENDPOINT, AUTHORIZATION),
+});
 const filterModel = new FilterModel();
 
+const tripMainElement = document.querySelector('.trip-main');
 const tripControlsFiltersElement = document.querySelector('.trip-controls__filters');
 
 const renderComponentsPresenter = new RenderComponentsPresenter({
-  waypointsModel,
-  destinationsModel,
-  offersModel,
+  tripsModel,
   filterModel,
   onNewWaypointDestroy: handleNewWaypointFormClose
 });
@@ -24,7 +26,7 @@ const renderComponentsPresenter = new RenderComponentsPresenter({
 const filterPresenter = new FilterPresenter({
   filterContainer: tripControlsFiltersElement,
   filterModel,
-  waypointsModel
+  tripsModel
 });
 
 const newEventButtonComponent = new NewEventButtonView({
@@ -40,5 +42,10 @@ function handleNewEventButtonClick() {
   newEventButtonComponent.element.disabled = true;
 }
 
+render(newEventButtonComponent, tripMainElement);
+newEventButtonComponent.element.disabled = true;
 filterPresenter.init();
 renderComponentsPresenter.init();
+tripsModel.init().finally(() => {
+  newEventButtonComponent.element.disabled = false;
+});
