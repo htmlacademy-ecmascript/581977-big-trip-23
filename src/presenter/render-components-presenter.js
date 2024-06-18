@@ -199,7 +199,7 @@ export default class RenderComponentsPresenter {
 
   #renderHeader() {
     this.#headerComponent = new HeaderView({
-      waypoints: this.#tripsModel.waypoints,
+      waypoints: [...this.#tripsModel.waypoints].sort(sortByDateFromAcs),
       destinations: this.destinations,
       offers: this.offers
     });

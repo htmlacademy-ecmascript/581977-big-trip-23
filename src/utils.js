@@ -38,8 +38,6 @@ const getDatesDiffFormatted = (start, end) => {
   }
 };
 
-const isDatesEqual = (dateA, dateB) => (dateA === null && dateB === null) || dayjs(dateA).isSame(dateB, 'D');
-
 const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1);
 
-export {DateTimeFormats, getFormattedDate, getDatesDiff, getDatesDiffFormatted, capitalizeFirstLetter, isDatesEqual};
+export {DateTimeFormats, getFormattedDate, getDatesDiff, getDatesDiffFormatted, capitalizeFirstLetter};

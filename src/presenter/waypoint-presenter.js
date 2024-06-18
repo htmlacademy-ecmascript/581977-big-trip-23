@@ -2,7 +2,6 @@ import WaypointView from '../view/waypoint-view.js';
 import EditingFormView from '../view/editing-form-view.js';
 import {remove, render, replace} from '../framework/render.js';
 import {UpdateType, UserAction} from '../const';
-import {isDatesEqual} from '../utils';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -122,12 +121,9 @@ export default class WaypointPresenter {
   };
 
   #handleFormSubmit = (update) => {
-    const isMinorUpdate =
-      !isDatesEqual(this.#waypoint.dateFrom, update.dateFrom) && !isDatesEqual(this.#waypoint.dateTo, update.dateTo);
-
     this.#handleDataChange(
       UserAction.UPDATE_WAYPOINT,
-      isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
+      UpdateType.MINOR,
       update,
     );
   };

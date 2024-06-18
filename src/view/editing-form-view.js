@@ -115,7 +115,7 @@ function createEditingFormTemplate(waypoint, destinations, offers) {
                   </div>
 
                   <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? 'disabled' : ''}>${isSaving ? 'Saving...' : 'Save'}</button>
-                  <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>${resetButtonName}</button>
+                  <button class="event__reset-btn" type="reset">${resetButtonName}</button>
                   <button class="event__rollup-btn" type="button">
                     <span class="visually-hidden">Open event</span>
                   </button>
