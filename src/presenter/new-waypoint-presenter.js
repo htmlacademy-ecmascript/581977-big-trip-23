@@ -10,15 +10,15 @@ export default class NewWaypointPresenter {
 
   #waypointEditComponent = null;
 
-  #waypoints = null;
+  #tripsModel = null;
   #noWaypointComponent = null;
   #pageBodyContainerElement = null;
 
-  constructor({waypointListContainer, onDataChange, onDestroy, waypoints, noWaypointComponent, pageBodyContainerElement}) {
+  constructor({waypointListContainer, onDataChange, onDestroy, tripsModel, noWaypointComponent, pageBodyContainerElement}) {
     this.#waypointListContainer = waypointListContainer;
     this.#handleDataChange = onDataChange;
     this.#handleDestroy = onDestroy;
-    this.#waypoints = waypoints;
+    this.#tripsModel = tripsModel;
     this.#noWaypointComponent = noWaypointComponent;
     this.#pageBodyContainerElement = pageBodyContainerElement;
   }
@@ -51,7 +51,7 @@ export default class NewWaypointPresenter {
     remove(this.#waypointEditComponent);
     this.#waypointEditComponent = null;
 
-    if (this.#waypoints.length === 0) {
+    if (this.#tripsModel.waypoints.length === 0) {
       render(this.#noWaypointComponent, this.#pageBodyContainerElement);
     }
 

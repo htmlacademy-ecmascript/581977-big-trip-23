@@ -51,7 +51,7 @@ export default class RenderComponentsPresenter {
       waypointListContainer: this.#waypointListComponent.element,
       onDataChange: this.#handleViewAction,
       onDestroy: onNewWaypointDestroy,
-      waypoints: this.waypoints,
+      tripsModel: tripsModel,
       noWaypointComponent: new ListEmptyView({
         filterType: this.#filterType
       }),

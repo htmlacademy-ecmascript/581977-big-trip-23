@@ -134,7 +134,8 @@ export default class EditingFormView extends AbstractStatefulView{
   #handleFormSubmit = null;
   #handleDeleteClick = null;
   #handleEditCloseClick = null;
-  #datepicker = null;
+  #datepickerFrom = null;
+  #datepickerTo = null;
 
   constructor({waypoint = BLANK_WAYPOINT, destinations, offers, onFormSubmit, onDeleteClick, onEditCloseClick}) {
     super();
@@ -158,9 +159,13 @@ export default class EditingFormView extends AbstractStatefulView{
   removeElement() {
     super.removeElement();
 
-    if (this.#datepicker) {
-      this.#datepicker.destroy();
-      this.#datepicker = null;
+    if (this.#datepickerFrom) {
+      this.#datepickerFrom.destroy();
+      this.#datepickerFrom = null;
+    }
+    if (this.#datepickerTo) {
+      this.#datepickerTo.destroy();
+      this.#datepickerTo = null;
     }
   }
 
@@ -212,27 +217,27 @@ export default class EditingFormView extends AbstractStatefulView{
   };
 
   #setDatepickerFrom() {
-    this.#datepicker = flatpickr(
+    this.#datepickerFrom = flatpickr(
       this.element.querySelector('input[name="event-start-time"]'),
       {
         maxDate: this._state.dateTo,
         enableTime: true,
         dateFormat: 'd/m/y H:i',
         defaultDate: this._state.dateFrom,
-        onChange: this.#dateFromChangeHandler,
+        onClose: this.#dateFromChangeHandler,
       }
     );
   }
 
   #setDatepickerTo() {
-    this.#datepicker = flatpickr(
+    this.#datepickerTo = flatpickr(
       this.element.querySelector('input[name="event-end-time"]'),
       {
         minDate: this._state.dateFrom,
         enableTime: true,
         dateFormat: 'd/m/y H:i',
         defaultDate: this._state.dateTo,
-        onChange: this.#dateToChangeHandler,
+        onClose: this.#dateToChangeHandler,
       }
     );
   }

@@ -4,6 +4,7 @@ import FilterModel from './model/filter-model.js';
 import FilterPresenter from './presenter/filter-presenter.js';
 import NewEventButtonView from './view/new-event-button-view.js';
 import DataApiService from './data-api-service.js';
+import {render} from './framework/render.js';
 
 const AUTHORIZATION = 'Basic I1fFjzLhVCfSIJF';
 const ENDPOINT = 'https://23.objects.htmlacademy.pro/big-trip';
@@ -13,6 +14,7 @@ const tripsModel = new TripsModel({
 });
 const filterModel = new FilterModel();
 
+const tripMainElement = document.querySelector('.trip-main');
 const tripControlsFiltersElement = document.querySelector('.trip-controls__filters');
 
 const renderComponentsPresenter = new RenderComponentsPresenter({
@@ -40,6 +42,7 @@ function handleNewEventButtonClick() {
   newEventButtonComponent.element.disabled = true;
 }
 
+render(newEventButtonComponent, tripMainElement);
 newEventButtonComponent.element.disabled = true;
 filterPresenter.init();
 renderComponentsPresenter.init();
