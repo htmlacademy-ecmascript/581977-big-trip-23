@@ -10,10 +10,17 @@ export default class NewWaypointPresenter {
 
   #waypointEditComponent = null;
 
-  constructor({waypointListContainer, onDataChange, onDestroy}) {
+  #waypoints = null;
+  #noWaypointComponent = null;
+  #pageBodyContainerElement = null;
+
+  constructor({waypointListContainer, onDataChange, onDestroy, waypoints, noWaypointComponent, pageBodyContainerElement}) {
     this.#waypointListContainer = waypointListContainer;
     this.#handleDataChange = onDataChange;
     this.#handleDestroy = onDestroy;
+    this.#waypoints = waypoints;
+    this.#noWaypointComponent = noWaypointComponent;
+    this.#pageBodyContainerElement = pageBodyContainerElement;
   }
 
   init(destinations, offers) {
@@ -43,6 +50,10 @@ export default class NewWaypointPresenter {
 
     remove(this.#waypointEditComponent);
     this.#waypointEditComponent = null;
+
+    if (this.#waypoints.length === 0) {
+      render(this.#noWaypointComponent, this.#pageBodyContainerElement);
+    }
 
     document.removeEventListener('keydown', this.#escKeyDownHandler);
   }

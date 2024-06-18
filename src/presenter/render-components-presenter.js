@@ -50,7 +50,12 @@ export default class RenderComponentsPresenter {
     this.#newWaypointPresenter = new NewWaypointPresenter({
       waypointListContainer: this.#waypointListComponent.element,
       onDataChange: this.#handleViewAction,
-      onDestroy: onNewWaypointDestroy
+      onDestroy: onNewWaypointDestroy,
+      waypoints: this.waypoints,
+      noWaypointComponent: new ListEmptyView({
+        filterType: this.#filterType
+      }),
+      pageBodyContainerElement: this.pageBodyContainerElement
     });
 
     this.#tripsModel.addObserver(this.#handleModelEvent);
@@ -92,6 +97,7 @@ export default class RenderComponentsPresenter {
     this.#currentSortType = SortType.DAY;
     this.#filterModel.setFilter(UpdateType.MAJOR, FilterTypes.EVERYTHING);
     this.#newWaypointPresenter.init(this.destinations, this.offers);
+    remove(this.#noWaypointComponent);
   }
 
   #handleSortTypeChange = (sortType) => {
