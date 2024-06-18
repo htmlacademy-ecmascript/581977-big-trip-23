@@ -4,20 +4,16 @@ import EditingFormView from '../view/editing-form-view.js';
 
 export default class NewWaypointPresenter {
   #waypointListContainer = null;
-  #pageBodyContainer = null;
 
   #handleDataChange = null;
   #handleDestroy = null;
 
   #waypointEditComponent = null;
-  #noWaypointComponent = null;
 
-  constructor({waypointListContainer, onDataChange, onDestroy, noWaypointComponent, pageBodyContainer}) {
+  constructor({waypointListContainer, onDataChange, onDestroy}) {
     this.#waypointListContainer = waypointListContainer;
     this.#handleDataChange = onDataChange;
     this.#handleDestroy = onDestroy;
-    this.#noWaypointComponent = noWaypointComponent;
-    this.#pageBodyContainer = pageBodyContainer;
   }
 
   init(destinations, offers) {
@@ -33,7 +29,6 @@ export default class NewWaypointPresenter {
       onEditCloseClick: this.#handleEditCloseClick,
     });
 
-    remove(this.#noWaypointComponent);
     render(this.#waypointEditComponent, this.#waypointListContainer, RenderPosition.AFTERBEGIN);
 
     document.addEventListener('keydown', this.#escKeyDownHandler);
@@ -47,7 +42,6 @@ export default class NewWaypointPresenter {
     this.#handleDestroy();
 
     remove(this.#waypointEditComponent);
-    render(this.#noWaypointComponent, this.#pageBodyContainer);
     this.#waypointEditComponent = null;
 
     document.removeEventListener('keydown', this.#escKeyDownHandler);

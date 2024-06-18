@@ -1,32 +1,44 @@
 import Observable from '../framework/observable.js';
 import {UpdateType} from '../const.js';
-import {render} from '../framework/render.js';
 
-export default class WaypointsModel extends Observable{
+export default class TripsModel extends Observable{
   #dataApiService = null;
   #waypoints = [];
-  #failedLoadDataComponent = null;
+  #destinations = [];
+  #offers = [];
+  #isLoadFailure = false;
 
-  constructor({dataApiService, failedLoadDataComponent}) {
+  constructor({dataApiService}) {
     super();
     this.#dataApiService = dataApiService;
-    this.#failedLoadDataComponent = failedLoadDataComponent;
   }
 
   get waypoints() {
     return this.#waypoints;
   }
 
+  get destinations() {
+    return this.#destinations;
+  }
+
+  get offers() {
+    return this.#offers;
+  }
+
   async init() {
     try {
       const waypoints = await this.#dataApiService.waypoints;
       this.#waypoints = waypoints.map(this.#adaptToClient);
+      this.#destinations = await this.#dataApiService.destinations;
+      this.#offers = await this.#dataApiService.offers;
     } catch(err) {
       this.#waypoints = [];
-      render(this.#failedLoadDataComponent, document.querySelector('.page-main > .page-body__container'));
+      this.#destinations = [];
+      this.#offers = [];
+      this.#isLoadFailure = true;
     }
 
-    this._notify(UpdateType.INIT);
+    this._notify(UpdateType.INIT, {isLoadFailure: this.#isLoadFailure});
   }
 
   async updateWaypoint(updateType, update) {

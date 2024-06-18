@@ -10,6 +10,7 @@ import NewWaypointPresenter from './new-waypoint-presenter.js';
 import LoadingView from '../view/loading-view.js';
 import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 import HeaderView from '../view/header-view.js';
+import FailedLoadDataView from '../view/failed-load-data-view';
 
 const TimeLimit = {
   LOWER_LIMIT: 350,
@@ -17,19 +18,18 @@ const TimeLimit = {
 };
 
 export default class RenderComponentsPresenter {
-  #waypointsModel = null;
-  #destinationsModel = null;
-  #offersModel = null;
+  #tripsModel = null;
   #filterModel = null;
 
   #waypointListComponent = new WaypointListView();
   #sortComponent = null;
   #loadingComponent = new LoadingView();
   #headerComponent = null;
+  #failedLoadDataComponent = new FailedLoadDataView();
 
   tripMainElement = document.querySelector('.trip-main');
   tripEventsElement = document.querySelector('.trip-events');
-  pageBodyContainer = document.querySelector('.page-main > .page-body__container');
+  pageBodyContainerElement = document.querySelector('.page-main > .page-body__container');
 
   #waypointPresenters = new Map();
   #newWaypointPresenter = null;
@@ -43,29 +43,23 @@ export default class RenderComponentsPresenter {
 
   #noWaypointComponent = null;
 
-  constructor({waypointsModel, destinationsModel, offersModel, filterModel, onNewWaypointDestroy}) {
-    this.#waypointsModel = waypointsModel;
-    this.#destinationsModel = destinationsModel;
-    this.#offersModel = offersModel;
+  constructor({tripsModel, filterModel, onNewWaypointDestroy}) {
+    this.#tripsModel = tripsModel;
     this.#filterModel = filterModel;
 
     this.#newWaypointPresenter = new NewWaypointPresenter({
       waypointListContainer: this.#waypointListComponent.element,
       onDataChange: this.#handleViewAction,
-      onDestroy: onNewWaypointDestroy,
-      noWaypointComponent: new ListEmptyView({
-        filterType: this.#filterType
-      }),
-      pageBodyContainer: this.pageBodyContainer
+      onDestroy: onNewWaypointDestroy
     });
 
-    this.#waypointsModel.addObserver(this.#handleModelEvent);
+    this.#tripsModel.addObserver(this.#handleModelEvent);
     this.#filterModel.addObserver(this.#handleModelEvent);
   }
 
   get waypoints() {
     this.#filterType = this.#filterModel.filter;
-    const waypoints = this.#waypointsModel.waypoints;
+    const waypoints = this.#tripsModel.waypoints;
     const filteredWaypoints = filter[this.#filterType](waypoints);
 
     switch (this.#currentSortType) {
@@ -83,11 +77,11 @@ export default class RenderComponentsPresenter {
   }
 
   get destinations() {
-    return this.#destinationsModel.destinations;
+    return this.#tripsModel.destinations;
   }
 
   get offers() {
-    return this.#offersModel.offers;
+    return this.#tripsModel.offers;
   }
 
   init() {
@@ -127,7 +121,7 @@ export default class RenderComponentsPresenter {
       case UserAction.UPDATE_WAYPOINT:
         this.#waypointPresenters.get(update.id).setSaving();
         try {
-          await this.#waypointsModel.updateWaypoint(updateType, update);
+          await this.#tripsModel.updateWaypoint(updateType, update);
         } catch(err) {
           this.#waypointPresenters.get(update.id).setAborting();
         }
@@ -135,7 +129,7 @@ export default class RenderComponentsPresenter {
       case UserAction.ADD_WAYPOINT:
         this.#newWaypointPresenter.setSaving();
         try {
-          await this.#waypointsModel.addWaypoint(updateType, update);
+          await this.#tripsModel.addWaypoint(updateType, update);
         } catch(err) {
           this.#newWaypointPresenter.setAborting();
         }
@@ -143,7 +137,7 @@ export default class RenderComponentsPresenter {
       case UserAction.DELETE_WAYPOINT:
         this.#waypointPresenters.get(update.id).setDeleting();
         try {
-          await this.#waypointsModel.deleteWaypoint(updateType, update);
+          await this.#tripsModel.deleteWaypoint(updateType, update);
         } catch(err) {
           this.#waypointPresenters.get(update.id).setAborting();
         }
@@ -169,6 +163,11 @@ export default class RenderComponentsPresenter {
         this.#renderBoard();
         break;
       case UpdateType.INIT:
+        if (data.isLoadFailure) {
+          remove(this.#loadingComponent);
+          this.#renderFailedLoadData();
+          return;
+        }
         this.#isLoading = false;
         remove(this.#loadingComponent);
         this.#renderBoard();
@@ -195,12 +194,12 @@ export default class RenderComponentsPresenter {
       filterType: this.#filterType
     });
 
-    render(this.#noWaypointComponent, this.pageBodyContainer);
+    render(this.#noWaypointComponent, this.pageBodyContainerElement);
   }
 
   #renderHeader() {
     this.#headerComponent = new HeaderView({
-      waypoints: this.#waypointsModel.waypoints,
+      waypoints: this.#tripsModel.waypoints,
       destinations: this.destinations,
       offers: this.offers
     });
@@ -215,6 +214,10 @@ export default class RenderComponentsPresenter {
   #handleModeChange = () => {
     this.#newWaypointPresenter.destroy();
     this.#waypointPresenters.forEach((presenter) => presenter.resetView());
+  };
+
+  #renderFailedLoadData = () => {
+    render(this.#failedLoadDataComponent, this.pageBodyContainerElement);
   };
 
   #clearBoard({resetSortType = false} = {}) {

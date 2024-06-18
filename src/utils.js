@@ -11,7 +11,7 @@ const getFormattedDate = (date, format) => date ? dayjs(date).format(format) : '
 
 const minTwoDigits = (n) => (n.toString().length < 2 ? '0' : '') + n;
 
-const getDatesDiff = (start, end) => start && end ? dayjs(end).diff(dayjs(start), 'd') : '';
+const getDatesDiff = (start, end) => start && end ? dayjs(end).diff(dayjs(start)) : '';
 
 const parseMinutes = (minutes) => {
   const days = Math.floor(minutes / (24 * 60));
