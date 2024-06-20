@@ -1,6 +1,10 @@
 import dayjs from 'dayjs';
 
-const DateTimeFormats = {
+const MINUTES_PER_HOUR = 60;
+const MINUTES_PER_DAY = 1440;
+const HOURS_PER_DAY = 24;
+
+const DateTimeFormat = {
   DATETIME: 'DD/MM/YY HH:mm',
   DATE: 'YYYY-MM-DD',
   MONTHDAY: 'MMM DD',
@@ -9,28 +13,28 @@ const DateTimeFormats = {
 
 const getFormattedDate = (date, format) => date ? dayjs(date).format(format) : '';
 
-const minTwoDigits = (n) => (n.toString().length < 2 ? '0' : '') + n;
+const formatNumberToMinTwoDigits = (number) => (number.toString().length < 2 ? '0' : '') + number;
 
 const getDatesDiff = (start, end) => start && end ? dayjs(end).diff(dayjs(start)) : '';
 
 const parseMinutes = (minutes) => {
-  const days = Math.floor(minutes / (24 * 60));
-  minutes %= (24 * 60);
-  const hours = Math.floor(minutes / 60);
-  minutes %= 60;
-  return `${minTwoDigits(days)}D ${minTwoDigits(hours)}H ${minTwoDigits(minutes)}M`;
+  const days = Math.floor(minutes / (HOURS_PER_DAY * MINUTES_PER_HOUR));
+  minutes %= (HOURS_PER_DAY * MINUTES_PER_HOUR);
+  const hours = Math.floor(minutes / MINUTES_PER_HOUR);
+  minutes %= MINUTES_PER_HOUR;
+  return `${formatNumberToMinTwoDigits(days)}D ${formatNumberToMinTwoDigits(hours)}H ${formatNumberToMinTwoDigits(minutes)}M`;
 };
 
 const getDatesDiffFormatted = (start, end) => {
   if (start && end) {
     const daysDiff = dayjs(end).diff(dayjs(start), 'm');
-    if (daysDiff < 60) {
+    if (daysDiff < MINUTES_PER_HOUR) {
       return `${daysDiff}M`;
-    } else if (daysDiff >= 60 && daysDiff < 1440) {
-      const hours = Math.floor(daysDiff / 60);
-      const minutes = daysDiff % 60;
-      return `${minTwoDigits(hours)}H ${minTwoDigits(minutes)}M`;
-    } else if (daysDiff >= 1440) {
+    } else if (daysDiff >= MINUTES_PER_HOUR && daysDiff < MINUTES_PER_DAY) {
+      const hours = Math.floor(daysDiff / MINUTES_PER_HOUR);
+      const minutes = daysDiff % MINUTES_PER_HOUR;
+      return `${formatNumberToMinTwoDigits(hours)}H ${formatNumberToMinTwoDigits(minutes)}M`;
+    } else if (daysDiff >= MINUTES_PER_DAY) {
       return parseMinutes(daysDiff);
     }
   } else {
@@ -40,4 +44,4 @@ const getDatesDiffFormatted = (start, end) => {
 
 const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1);
 
-export {DateTimeFormats, getFormattedDate, getDatesDiff, getDatesDiffFormatted, capitalizeFirstLetter};
+export {DateTimeFormat, getFormattedDate, getDatesDiff, getDatesDiffFormatted, capitalizeFirstLetter};

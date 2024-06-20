@@ -1,5 +1,5 @@
 import {TRIP_TYPES} from '../const.js';
-import {capitalizeFirstLetter, DateTimeFormats, getFormattedDate} from '../utils.js';
+import {capitalizeFirstLetter, DateTimeFormat, getFormattedDate} from '../utils.js';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
@@ -15,18 +15,14 @@ const BLANK_WAYPOINT = {
   type: 'flight'
 };
 
-function createEditingFormTemplate(waypoint, destinations, offers) {
-  const {basePrice, dateFrom, dateTo, destination, type, isDisabled, isSaving, isDeleting} = waypoint;
-  const currentDestination = destinations.find((item) => item.id === destination);
-  const {description, pictures} = currentDestination ? currentDestination : '';
-  const typeOffers = offers.find((offer) => offer.type === type);
-  const pointOffers = typeOffers && waypoint.offers ? typeOffers.offers.filter((typeOffer) => waypoint.offers.includes(typeOffer.id)) : [];
-  const createTripTypesTemplate = () => TRIP_TYPES.map((tripType) => `<div class="event__type-item">
+const createTripTypesTemplate = (type, isDisabled) => TRIP_TYPES.map((tripType) => `<div class="event__type-item">
                           <input id="event-type-${tripType.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${tripType.toLowerCase()}" ${tripType.toLowerCase() === type ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
                           <label class="event__type-label  event__type-label--${tripType.toLowerCase()}" for="event-type-${tripType.toLowerCase()}-1">${tripType}</label>
                         </div>`).join('');
-  const createCityNamesTemplate = () => destinations.map((data) => `<option value="${data.name}"></option>`).join('');
-  const createOffersTemplate = () => (typeof typeOffers === 'undefined' || typeOffers.offers.length === 0) ? '' : `<section class="event__section  event__section--offers">
+
+const createCityNamesTemplate = (destinations) => destinations.map((data) => `<option value="${data.name}"></option>`).join('');
+
+const createOffersTemplate = (typeOffers, pointOffers, isDisabled) => (typeof typeOffers === 'undefined' || typeOffers.offers.length === 0) ? '' : `<section class="event__section  event__section--offers">
                     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
                     <div class="event__available-offers">
                       ${typeOffers.offers.map((offer) => `<div class="event__offer-selector">
@@ -40,7 +36,7 @@ function createEditingFormTemplate(waypoint, destinations, offers) {
                     </div>
                   </section>`;
 
-  const createDescriptionTemplate = () => description ? `<section class="event__section  event__section--destination">
+const createDescriptionTemplate = (description, pictures) => description ? `<section class="event__section  event__section--destination">
                     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
                     <p class="event__destination-description">${description}</p>
                     ${pictures.length !== 0 ? `<div class="event__photos-container">
@@ -49,26 +45,34 @@ function createEditingFormTemplate(waypoint, destinations, offers) {
                       </div>
                     </div>` : ''}
                   </section>` : '';
-  const getResetButtonName = () => {
-    if (waypoint.id) {
-      if (isDeleting) {
-        return 'Deleting...';
-      } else {
-        return 'Delete';
-      }
+
+const getResetButtonName = (waypoint, isDeleting) => {
+  if (waypoint.id) {
+    if (isDeleting) {
+      return 'Deleting...';
     } else {
-      return 'Cancel';
+      return 'Delete';
     }
-  };
-  const typesTemplate = createTripTypesTemplate();
-  const cityNamesTemplate = createCityNamesTemplate();
-  const offersTemplate = createOffersTemplate();
+  } else {
+    return 'Cancel';
+  }
+};
+
+function createEditingFormTemplate(waypoint, destinations, offers) {
+  const {basePrice, dateFrom, dateTo, destination, type, isDisabled, isSaving, isDeleting} = waypoint;
+  const currentDestination = destinations.find((item) => item.id === destination);
+  const {description, pictures} = currentDestination ? currentDestination : '';
+  const typeOffers = offers.find((offer) => offer.type === type);
+  const pointOffers = typeOffers && waypoint.offers ? typeOffers.offers.filter((typeOffer) => waypoint.offers.includes(typeOffer.id)) : [];
+  const typesTemplate = createTripTypesTemplate(type, isDisabled);
+  const cityNamesTemplate = createCityNamesTemplate(destinations);
+  const offersTemplate = createOffersTemplate(typeOffers, pointOffers, isDisabled);
   const formattedDates = {
-    start: getFormattedDate(dateFrom, DateTimeFormats.DATETIME),
-    end: getFormattedDate(dateTo, DateTimeFormats.DATETIME)
+    start: getFormattedDate(dateFrom, DateTimeFormat.DATETIME),
+    end: getFormattedDate(dateTo, DateTimeFormat.DATETIME)
   };
-  const descriptionTemplate = createDescriptionTemplate();
-  const resetButtonName = getResetButtonName();
+  const descriptionTemplate = createDescriptionTemplate(description, pictures);
+  const resetButtonName = getResetButtonName(waypoint, isDeleting);
 
   return (`            <li class="trip-events__item">
               <form class="event event--edit" action="#" method="post">
@@ -111,7 +115,7 @@ function createEditingFormTemplate(waypoint, destinations, offers) {
                       <span class="visually-hidden">Price</span>
                       &euro;
                     </label>
-                    <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${basePrice}" ${isDisabled ? 'disabled' : ''}>
+                    <input class="event__input  event__input--price" id="event-price-1" type="number" min="1" name="event-price" value="${basePrice}" ${isDisabled ? 'disabled' : ''}>
                   </div>
 
                   <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? 'disabled' : ''}>${isSaving ? 'Saving...' : 'Save'}</button>
@@ -149,6 +153,22 @@ export default class EditingFormView extends AbstractStatefulView{
     this._restoreHandlers();
   }
 
+  get template() {
+    return createEditingFormTemplate(this._state, this.#destinations, this.#offers);
+  }
+
+  _restoreHandlers() {
+    this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
+    this.element.querySelector('.event__type-list').addEventListener('change', this.#typeClickHandler);
+    this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationInputHandler);
+    this.element.querySelector('.event__input--price').addEventListener('input', this.#priceInputHandler);
+    this.element.querySelector('.event__details').addEventListener('change', this.#offerInputHandler);
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#formDeleteClickHandler);
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editCloseClickHandler);
+    this.#setDatepickerFrom();
+    this.#setDatepickerTo();
+  }
+
   reset(waypoint) {
     this._setState({offers: []});
     this.updateElement(
@@ -168,53 +188,6 @@ export default class EditingFormView extends AbstractStatefulView{
       this.#datepickerTo = null;
     }
   }
-
-  _restoreHandlers() {
-    this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
-    this.element.querySelector('.event__type-list').addEventListener('change', this.#typeClickHandler);
-    this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationInputHandler);
-    this.element.querySelector('.event__input--price').addEventListener('input', this.#priceInputHandler);
-    this.element.querySelector('.event__details').addEventListener('change', this.#offerInputHandler);
-    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#formDeleteClickHandler);
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editCloseClickHandler);
-    this.#setDatepickerFrom();
-    this.#setDatepickerTo();
-  }
-
-  get template() {
-    return createEditingFormTemplate(this._state, this.#destinations, this.#offers);
-  }
-
-  static parseWaypointToState(waypoint) {
-    return {
-      ...waypoint,
-      isDisabled: false,
-      isSaving: false,
-      isDeleting: false
-    };
-  }
-
-  static parseStateToWaypoint(state) {
-    const waypoint = {...state};
-
-    delete waypoint.isDisabled;
-    delete waypoint.isSaving;
-    delete waypoint.isDeleting;
-
-    return waypoint;
-  }
-
-  #dateFromChangeHandler = ([userDate]) => {
-    this.updateElement({
-      dateFrom: userDate,
-    });
-  };
-
-  #dateToChangeHandler = ([userDate]) => {
-    this.updateElement({
-      dateTo: userDate,
-    });
-  };
 
   #setDatepickerFrom() {
     this.#datepickerFrom = flatpickr(
@@ -241,6 +214,18 @@ export default class EditingFormView extends AbstractStatefulView{
       }
     );
   }
+
+  #dateFromChangeHandler = ([userDate]) => {
+    this.updateElement({
+      dateFrom: userDate,
+    });
+  };
+
+  #dateToChangeHandler = ([userDate]) => {
+    this.updateElement({
+      dateTo: userDate,
+    });
+  };
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
@@ -299,4 +284,23 @@ export default class EditingFormView extends AbstractStatefulView{
     evt.preventDefault();
     this.#handleEditCloseClick();
   };
+
+  static parseWaypointToState(waypoint) {
+    return {
+      ...waypoint,
+      isDisabled: false,
+      isSaving: false,
+      isDeleting: false
+    };
+  }
+
+  static parseStateToWaypoint(state) {
+    const waypoint = {...state};
+
+    delete waypoint.isDisabled;
+    delete waypoint.isSaving;
+    delete waypoint.isDeleting;
+
+    return waypoint;
+  }
 }

@@ -1,7 +1,7 @@
 import WaypointView from '../view/waypoint-view.js';
 import EditingFormView from '../view/editing-form-view.js';
 import {remove, render, replace} from '../framework/render.js';
-import {UpdateType, UserAction} from '../const';
+import {UpdateType, UserAction} from '../const.js';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -10,6 +10,7 @@ const Mode = {
 
 export default class WaypointPresenter {
   #waypointListContainer = null;
+
   #handleDataChange = null;
   #handleModeChange = null;
 
@@ -82,6 +83,41 @@ export default class WaypointPresenter {
     remove(this.#waypointEditComponent);
   }
 
+  setSaving() {
+    if (this.#mode === Mode.EDITING) {
+      this.#waypointEditComponent.updateElement({
+        isDisabled: true,
+        isSaving: true,
+      });
+    }
+  }
+
+  setDeleting() {
+    if (this.#mode === Mode.EDITING) {
+      this.#waypointEditComponent.updateElement({
+        isDisabled: true,
+        isDeleting: true,
+      });
+    }
+  }
+
+  setAborting() {
+    if (this.#mode === Mode.DEFAULT) {
+      this.#waypointComponent.shake();
+      return;
+    }
+
+    const resetFormState = () => {
+      this.#waypointEditComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#waypointEditComponent.shake(resetFormState);
+  }
+
   #replaceCardToForm() {
     replace(this.#waypointEditComponent, this.#waypointComponent);
     document.addEventListener('keydown', this.#escKeyDownHandler);
@@ -135,39 +171,4 @@ export default class WaypointPresenter {
       waypoint,
     );
   };
-
-  setSaving() {
-    if (this.#mode === Mode.EDITING) {
-      this.#waypointEditComponent.updateElement({
-        isDisabled: true,
-        isSaving: true,
-      });
-    }
-  }
-
-  setDeleting() {
-    if (this.#mode === Mode.EDITING) {
-      this.#waypointEditComponent.updateElement({
-        isDisabled: true,
-        isDeleting: true,
-      });
-    }
-  }
-
-  setAborting() {
-    if (this.#mode === Mode.DEFAULT) {
-      this.#waypointComponent.shake();
-      return;
-    }
-
-    const resetFormState = () => {
-      this.#waypointEditComponent.updateElement({
-        isDisabled: false,
-        isSaving: false,
-        isDeleting: false,
-      });
-    };
-
-    this.#waypointEditComponent.shake(resetFormState);
-  }
 }
