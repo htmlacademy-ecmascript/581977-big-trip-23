@@ -1,24 +1,24 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import {DateTimeFormats, getDatesDiffFormatted, getFormattedDate} from '../utils.js';
+import {DateTimeFormat, getDatesDiffFormatted, getFormattedDate} from '../utils.js';
 
-function createWaypointTemplate(waypoint, destinations, offers) {
-  const {basePrice, dateFrom, dateTo, destination, type, isFavorite} = waypoint;
-  const currentDestination = destinations.find((item) => item.id === destination);
-  //const {name} = currentDestination;
-  const typeOffers = offers.find((offer) => offer.type === type);
-  const pointOffers = typeOffers && waypoint.offers ? typeOffers.offers.filter((typeOffer) => waypoint.offers.includes(typeOffer.id)) : [];
-  const createOffersTemplate = () => pointOffers.length === 0 ? '' : pointOffers.map((offer) => `<li class="event__offer">
+const createOffersTemplate = (pointOffers) => pointOffers.length === 0 ? '' : pointOffers.map((offer) => `<li class="event__offer">
                     <span class="event__offer-title">${offer.title}</span>
                     &plus;&euro;&nbsp;
                     <span class="event__offer-price">${offer.price}</span>
                   </li>`).join('');
-  const offersTemplate = createOffersTemplate();
+
+function createWaypointTemplate(waypoint, destinations, offers) {
+  const {basePrice, dateFrom, dateTo, destination, type, isFavorite} = waypoint;
+  const currentDestination = destinations.find((item) => item.id === destination);
+  const typeOffers = offers.find((offer) => offer.type === type);
+  const pointOffers = typeOffers && waypoint.offers ? typeOffers.offers.filter((typeOffer) => waypoint.offers.includes(typeOffer.id)) : [];
+  const offersTemplate = createOffersTemplate(pointOffers);
   const formattedDates = {
-    startDate: getFormattedDate(dateFrom, DateTimeFormats.DATE),
-    endDate: getFormattedDate(dateTo, DateTimeFormats.DATE),
-    startMonthDay: getFormattedDate(dateFrom, DateTimeFormats.MONTHDAY).toUpperCase(),
-    startTime: getFormattedDate(dateFrom, DateTimeFormats.TIME),
-    endTime: getFormattedDate(dateTo, DateTimeFormats.TIME),
+    startDate: getFormattedDate(dateFrom, DateTimeFormat.DATE),
+    endDate: getFormattedDate(dateTo, DateTimeFormat.DATE),
+    startMonthDay: getFormattedDate(dateFrom, DateTimeFormat.MONTHDAY).toUpperCase(),
+    startTime: getFormattedDate(dateFrom, DateTimeFormat.TIME),
+    endTime: getFormattedDate(dateTo, DateTimeFormat.TIME),
     daysDiff: getDatesDiffFormatted(dateFrom, dateTo)
   };
 

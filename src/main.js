@@ -14,12 +14,17 @@ const tripsModel = new TripsModel({
 });
 const filterModel = new FilterModel();
 
+const newEventButtonComponent = new NewEventButtonView({
+  onClick: handleNewEventButtonClick
+});
+
 const tripMainElement = document.querySelector('.trip-main');
 const tripControlsFiltersElement = document.querySelector('.trip-controls__filters');
 
 const renderComponentsPresenter = new RenderComponentsPresenter({
   tripsModel,
   filterModel,
+  newEventButtonComponent,
   onNewWaypointDestroy: handleNewWaypointFormClose
 });
 
@@ -27,10 +32,6 @@ const filterPresenter = new FilterPresenter({
   filterContainer: tripControlsFiltersElement,
   filterModel,
   tripsModel
-});
-
-const newEventButtonComponent = new NewEventButtonView({
-  onClick: handleNewEventButtonClick
 });
 
 function handleNewWaypointFormClose() {
@@ -46,6 +47,4 @@ render(newEventButtonComponent, tripMainElement);
 newEventButtonComponent.element.disabled = true;
 filterPresenter.init();
 renderComponentsPresenter.init();
-tripsModel.init().finally(() => {
-  newEventButtonComponent.element.disabled = false;
-});
+tripsModel.init();

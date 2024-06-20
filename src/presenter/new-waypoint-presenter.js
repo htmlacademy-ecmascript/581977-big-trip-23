@@ -3,24 +3,24 @@ import {UserAction, UpdateType} from '../const.js';
 import EditingFormView from '../view/editing-form-view.js';
 
 export default class NewWaypointPresenter {
+  #waypointEditComponent = null;
+  #noWaypointComponent = null;
+
+  #tripsModel = null;
+
   #waypointListContainer = null;
+  #pageBodyContainer = null;
 
   #handleDataChange = null;
   #handleDestroy = null;
 
-  #waypointEditComponent = null;
-
-  #tripsModel = null;
-  #noWaypointComponent = null;
-  #pageBodyContainerElement = null;
-
-  constructor({waypointListContainer, onDataChange, onDestroy, tripsModel, noWaypointComponent, pageBodyContainerElement}) {
+  constructor({waypointListContainer, onDataChange, onDestroy, tripsModel, noWaypointComponent, pageBodyContainer}) {
     this.#waypointListContainer = waypointListContainer;
     this.#handleDataChange = onDataChange;
     this.#handleDestroy = onDestroy;
     this.#tripsModel = tripsModel;
     this.#noWaypointComponent = noWaypointComponent;
-    this.#pageBodyContainerElement = pageBodyContainerElement;
+    this.#pageBodyContainer = pageBodyContainer;
   }
 
   init(destinations, offers) {
@@ -52,10 +52,29 @@ export default class NewWaypointPresenter {
     this.#waypointEditComponent = null;
 
     if (this.#tripsModel.waypoints.length === 0) {
-      render(this.#noWaypointComponent, this.#pageBodyContainerElement);
+      render(this.#noWaypointComponent, this.#pageBodyContainer);
     }
 
     document.removeEventListener('keydown', this.#escKeyDownHandler);
+  }
+
+  setSaving() {
+    this.#waypointEditComponent.updateElement({
+      isDisabled: true,
+      isSaving: true,
+    });
+  }
+
+  setAborting() {
+    const resetFormState = () => {
+      this.#waypointEditComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#waypointEditComponent.shake(resetFormState);
   }
 
   #handleFormSubmit = (waypoint) => {
@@ -80,23 +99,4 @@ export default class NewWaypointPresenter {
   #handleEditCloseClick = () => {
     this.destroy();
   };
-
-  setSaving() {
-    this.#waypointEditComponent.updateElement({
-      isDisabled: true,
-      isSaving: true,
-    });
-  }
-
-  setAborting() {
-    const resetFormState = () => {
-      this.#waypointEditComponent.updateElement({
-        isDisabled: false,
-        isSaving: false,
-        isDeleting: false,
-      });
-    };
-
-    this.#waypointEditComponent.shake(resetFormState);
-  }
 }
