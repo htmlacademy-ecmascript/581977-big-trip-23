@@ -1,12 +1,12 @@
 import {getDatesDiff} from './utils.js';
 import dayjs from 'dayjs';
 
-const sortByPrice = (a, b) => b.basePrice - a.basePrice;
+const sortByPrice = (firstWaypoint, secondWaypoint) => secondWaypoint.basePrice - firstWaypoint.basePrice;
 
-const sortByDateFromAcs = (a, b) => dayjs(a.dateFrom) - dayjs(b.dateFrom);
+const sortByDateFromAcs = (firstWaypoint, secondWaypoint) => dayjs(firstWaypoint.dateFrom) - dayjs(secondWaypoint.dateFrom);
 
-const sortByDateToDesc = (a, b) => dayjs(b.dateTo) - dayjs(a.dateTo);
+const sortByDateToDesc = (firstWaypoint, secondWaypoint) => dayjs(secondWaypoint.dateTo) - dayjs(firstWaypoint.dateTo);
 
-const sortByTime = (a, b) => getDatesDiff(b.dateFrom, b.dateTo) - getDatesDiff(a.dateFrom, a.dateTo);
+const sortByTime = (firstWaypoint, secondWaypoint) => getDatesDiff(secondWaypoint.dateFrom, secondWaypoint.dateTo) - getDatesDiff(firstWaypoint.dateFrom, firstWaypoint.dateTo);
 
 export {sortByPrice, sortByTime, sortByDateFromAcs, sortByDateToDesc};

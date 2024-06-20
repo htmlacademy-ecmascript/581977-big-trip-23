@@ -1,13 +1,13 @@
 const TRIP_TYPES = ['Taxi', 'Bus', 'Train', 'Ship', 'Drive', 'Flight', 'Check-in', 'Sightseeing', 'Restaurant'];
 
-const FilterTypes = {
+const FilterType = {
   EVERYTHING: 'everything',
   FUTURE: 'future',
   PRESENT: 'present',
   PAST: 'past'
 };
 
-const SortTypes = {
+const SortType = {
   DAY: 'sort-day',
   EVENT: 'sort-event',
   TIME: 'sort-time',
@@ -28,4 +28,4 @@ const UpdateType = {
   INIT: 'INIT',
 };
 
-export {TRIP_TYPES, FilterTypes, SortTypes, UserAction, UpdateType};
+export {TRIP_TYPES, FilterType, SortType, UserAction, UpdateType};
